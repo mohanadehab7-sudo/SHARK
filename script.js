@@ -168,13 +168,30 @@ document.getElementById('refreshUsersBtn').addEventListener('click', async () =>
 });
 document.getElementById('msgAllFilteredBtn').addEventListener('click', () => openMsgModal('__BULK__'));
 
+function isUserSubActive(u) {
+    if (u.status === 'banned') return false;
+    const lic = codesData.find(c => c.device_id === u.device_id && c.status !== 'suspended');
+    const mode = settingsData?.bot_mode || 'subscription';
+    if (lic) {
+        if (!lic.expires_at) return true; // Lifetime
+        return new Date(lic.expires_at) > new Date();
+    }
+    if (mode === 'free') return true;
+    if (mode === 'trial') {
+        const created = u.created_at ? new Date(u.created_at) : new Date();
+        const trialEnd = new Date(created.getTime() + 24 * 3600000);
+        return trialEnd > new Date();
+    }
+    return false;
+}
+
 function applyUserFilter() {
     const filter = document.getElementById('userFilter').value;
     const search = document.getElementById('userSearch').value.toLowerCase().trim();
     const now = new Date();
     const DAY = 86400000, WEEK = 604800000;
 
-    let filtered = usersData;
+    let filtered = [...usersData]; // Clone array to avoid mutating global usersData
     if (search) {
         filtered = filtered.filter(u =>
             (u.device_name||'').toLowerCase().includes(search) ||
@@ -182,21 +199,39 @@ function applyUserFilter() {
         );
     }
     switch(filter) {
-        case 'new_today':  filtered = usersData.filter(u => u.created_at && (now - new Date(u.created_at)) < DAY); break;
-        case 'new_week':   filtered = usersData.filter(u => u.created_at && (now - new Date(u.created_at)) < WEEK); break;
-        case 'active':     filtered = usersData.filter(u => u.status === 'active'); break;
-        case 'blocked':    filtered = usersData.filter(u => u.status === 'banned'); break;
-        case 'expiring':   filtered = usersData.filter(u => {
+        case 'new_today':  filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < DAY); break;
+        case 'new_week':   filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < WEEK); break;
+        case 'active':     filtered = filtered.filter(u => u.status === 'active'); break;
+        case 'blocked':    filtered = filtered.filter(u => u.status === 'banned'); break;
+        case 'expiring':   filtered = filtered.filter(u => {
             const lic = codesData.find(c => c.device_id === u.device_id);
             if (!lic?.expires_at) return false;
             const diff = new Date(lic.expires_at) - now;
             return diff > 0 && diff < 3 * DAY;
         }); break;
-        case 'lifetime':   filtered = usersData.filter(u => {
+        case 'lifetime':   filtered = filtered.filter(u => {
             const lic = codesData.find(c => c.device_id === u.device_id);
             return !lic?.expires_at;
         }); break;
     }
+
+    // Sort: Active users first, then sort by envelopes (total_runs) descending, then by runtime (total_minutes) descending
+    filtered.sort((a, b) => {
+        const activeA = isUserSubActive(a);
+        const activeB = isUserSubActive(b);
+        if (activeA !== activeB) {
+            return activeA ? -1 : 1;
+        }
+        const runsA = a.total_runs || 0;
+        const runsB = b.total_runs || 0;
+        if (runsA !== runsB) {
+            return runsB - runsA;
+        }
+        const minsA = a.total_minutes || 0;
+        const minsB = b.total_minutes || 0;
+        return minsB - minsA;
+    });
+
     document.getElementById('filteredCount').textContent = `(${filtered.length})`;
     displayUsers(filtered);
 }
