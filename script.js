@@ -189,7 +189,7 @@ function applyUserFilter() {
     const filter = document.getElementById('userFilter').value;
     const search = document.getElementById('userSearch').value.toLowerCase().trim();
     const now = new Date();
-    const DAY = 86400000, WEEK = 604800000;
+    const DAY = 86400000;
 
     let filtered = [...usersData]; // Clone array to avoid mutating global usersData
     if (search) {
@@ -199,29 +199,43 @@ function applyUserFilter() {
         );
     }
     switch(filter) {
-        case 'new_today':   filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < DAY); break;
-        case 'new_week':    filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < WEEK); break;
-        case 'active_sub':  filtered = filtered.filter(u => isUserSubActive(u)); break;
-        case 'expired_sub': filtered = filtered.filter(u => !isUserSubActive(u) && u.status !== 'banned'); break;
-        case 'blocked':     filtered = filtered.filter(u => u.status === 'banned'); break;
-        case 'expiring':    filtered = filtered.filter(u => {
-            const lic = codesData.find(c => c.device_id === u.device_id);
-            if (!lic?.expires_at) return false;
-            const diff = new Date(lic.expires_at) - now;
-            return diff > 0 && diff < 3 * DAY;
-        }); break;
-        case 'lifetime':    filtered = filtered.filter(u => {
-            const lic = codesData.find(c => c.device_id === u.device_id);
-            return lic && !lic.expires_at;
-        }); break;
+        case 'expired_or_expiring':
+            filtered = filtered.filter(u => {
+                if (u.status === 'banned') return false;
+                const active = isUserSubActive(u);
+                if (!active) return true; // already expired
+                
+                // Check if expiring in less than 3 days
+                const lic = codesData.find(c => c.device_id === u.device_id && c.status !== 'suspended');
+                if (lic?.expires_at) {
+                    const diff = new Date(lic.expires_at) - now;
+                    return diff > 0 && diff < 3 * DAY;
+                }
+                const mode = settingsData?.bot_mode || 'subscription';
+                if (mode === 'trial') {
+                    const created = u.created_at ? new Date(u.created_at) : new Date();
+                    const trialEnd = new Date(created.getTime() + 24 * 3600000);
+                    const diff = trialEnd - now;
+                    return diff > 0 && diff < 3 * DAY;
+                }
+                return false;
+            });
+            break;
+        case 'blocked':
+            filtered = filtered.filter(u => u.status === 'banned');
+            break;
     }
 
-    // Sort: Active users first, then sort by envelopes (total_runs) descending, then by runtime (total_minutes) descending
+    // Sort:
+    // If not sorting purely by "most_active", sort active users first.
+    // In both cases, sort by envelopes (total_runs) descending, then by runtime (total_minutes) descending.
     filtered.sort((a, b) => {
-        const activeA = isUserSubActive(a);
-        const activeB = isUserSubActive(b);
-        if (activeA !== activeB) {
-            return activeA ? -1 : 1;
+        if (filter !== 'most_active') {
+            const activeA = isUserSubActive(a);
+            const activeB = isUserSubActive(b);
+            if (activeA !== activeB) {
+                return activeA ? -1 : 1;
+            }
         }
         const runsA = parseInt(a.total_runs) || 0;
         const runsB = parseInt(b.total_runs) || 0;
