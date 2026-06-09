@@ -199,19 +199,20 @@ function applyUserFilter() {
         );
     }
     switch(filter) {
-        case 'new_today':  filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < DAY); break;
-        case 'new_week':   filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < WEEK); break;
-        case 'active':     filtered = filtered.filter(u => u.status === 'active'); break;
-        case 'blocked':    filtered = filtered.filter(u => u.status === 'banned'); break;
-        case 'expiring':   filtered = filtered.filter(u => {
+        case 'new_today':   filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < DAY); break;
+        case 'new_week':    filtered = filtered.filter(u => u.created_at && (now - new Date(u.created_at)) < WEEK); break;
+        case 'active_sub':  filtered = filtered.filter(u => isUserSubActive(u)); break;
+        case 'expired_sub': filtered = filtered.filter(u => !isUserSubActive(u) && u.status !== 'banned'); break;
+        case 'blocked':     filtered = filtered.filter(u => u.status === 'banned'); break;
+        case 'expiring':    filtered = filtered.filter(u => {
             const lic = codesData.find(c => c.device_id === u.device_id);
             if (!lic?.expires_at) return false;
             const diff = new Date(lic.expires_at) - now;
             return diff > 0 && diff < 3 * DAY;
         }); break;
-        case 'lifetime':   filtered = filtered.filter(u => {
+        case 'lifetime':    filtered = filtered.filter(u => {
             const lic = codesData.find(c => c.device_id === u.device_id);
-            return !lic?.expires_at;
+            return lic && !lic.expires_at;
         }); break;
     }
 

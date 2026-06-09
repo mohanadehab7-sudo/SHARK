@@ -159,17 +159,18 @@
                     </div>
                     <select id="userFilter">
                         <option value="all">👥 جميع المستخدمين</option>
+                        <optgroup label="— حسب الاشتراك —">
+                            <option value="active_sub">✅ باشتراك نشط</option>
+                            <option value="expired_sub">❌ باشتراك منتهي</option>
+                            <option value="lifetime">♾️ مدى الحياة</option>
+                            <option value="expiring">⚠️ قاربت على الانتهاء</option>
+                        </optgroup>
                         <optgroup label="— حسب التسجيل —">
                             <option value="new_today">🆕 جدد - اليوم</option>
                             <option value="new_week">📅 جدد - آخر 7 أيام</option>
                         </optgroup>
                         <optgroup label="— حسب الحالة —">
-                            <option value="active">✅ نشطين فقط</option>
-                            <option value="blocked">🚫 محظورين فقط</option>
-                        </optgroup>
-                        <optgroup label="— حسب الاشتراك —">
-                            <option value="expiring">⚠️ قاربت على الانتهاء</option>
-                            <option value="lifetime">♾️ مدى الحياة</option>
+                            <option value="blocked">🚫 أجهزة محظورة فقط</option>
                         </optgroup>
                     </select>
                     <button id="refreshUsersBtn" class="btn-secondary"><i class="fas fa-sync"></i> تحديث</button>
