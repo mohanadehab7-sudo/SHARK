@@ -12,6 +12,17 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     }
 });
 
+// Escape HTML to prevent Stored XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // ── STATE ──────────────────────────────────────────
 let settingsData = null;
 let currentUser = null;
@@ -238,13 +249,18 @@ function displayUsers(users) {
             remainingCell = '<span style="color:var(--muted);font-size:11px;">—</span>';
         }
         // subscription بدون كود → يبقى "بدون ترخيص" الافتراضي
+        const safeName = escapeHtml(u.device_name || 'غير معروف');
+        const safeId = escapeHtml(u.device_id);
+        const safeIdShort = safeId.substring(0,12);
+        const deviceDisplay = safeName !== 'غير معروف' ? safeName : `هاتف (${safeId.substring(0,8)})`;
+
         return `<tr>
             <td style="text-align:center;">${onlineDot}</td>
-            <td style="font-size:12px;font-weight:700;color:var(--neon);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${u.device_name || 'غير معروف'}">
-                📱 ${u.device_name || 'هاتف (' + (u.device_id?.substring(0,8) || '') + ')'}
+            <td style="font-size:12px;font-weight:700;color:var(--neon);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${safeName}">
+                📱 ${deviceDisplay}
             </td>
-            <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${u.device_id}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل: ${u.device_id}">
-                ${u.device_id?.substring(0,12)}... <i class="far fa-copy" style="font-size:9px;margin-left:2px;"></i>
+            <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل: ${safeId}">
+                ${safeIdShort}... <i class="far fa-copy" style="font-size:9px;margin-left:2px;"></i>
             </td>
             <td>${formatRelative(u.last_seen)}</td>
             <td>${subEnd}</td>
@@ -253,7 +269,7 @@ function displayUsers(users) {
             <td><span class="badge" style="background:rgba(67,56,202,0.1);color:#a5b4fc;border:1px solid rgba(67,56,202,0.3);">${formatMins(u.total_minutes || 0)}</span></td>
             <td>${statusBadge}</td>
             <td style="white-space:nowrap;">
-                <button class="table-btn" style="color:var(--neon);background:rgba(0,243,255,0.1);border:1px solid rgba(0,243,255,0.2);width:36px;" onclick="openActionsCard('${u.device_id}')" title="الإجراءات"><i class="fas fa-ellipsis-v"></i></button>
+                <button class="table-btn" style="color:var(--neon);background:rgba(0,243,255,0.1);border:1px solid rgba(0,243,255,0.2);width:36px;" onclick="openActionsCard('${safeId}')" title="الإجراءات"><i class="fas fa-ellipsis-v"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -330,7 +346,9 @@ function loadExpiryTable() {
 
     tbody.innerHTML = filtered.map((r, i) => {
         const { user: u, lic, expiresAt, sourceLabel } = r;
-        const phoneName = u.device_name || `هاتف (${u.device_id?.substring(0,8)})`;
+        const safeName = escapeHtml(u.device_name);
+        const safeId = escapeHtml(u.device_id);
+        const phoneName = safeName || `هاتف (${safeId.substring(0,8)})`;
         const startDate = lic?.created_at ? formatDate(lic.created_at) : (u.created_at ? formatDate(u.created_at) : '—');
         const endDate   = expiresAt ? formatDate(expiresAt.toISOString()) : '—';
         const remaining = expiresAt ? formatRemainingDays(expiresAt.toISOString()) : '<span style="color:var(--muted);">—</span>';
@@ -358,7 +376,7 @@ function loadExpiryTable() {
             <td style="text-align:center;">${remaining}</td>
             <td>${statusBadge}</td>
             <td>
-                <button class="table-btn details-btn" onclick="openUserDetailsModal('${u.device_id}')" title="التفاصيل" style="width:auto;padding:0 10px;gap:4px;">
+                <button class="table-btn details-btn" onclick="openUserDetailsModal('${safeId}')" title="التفاصيل" style="width:auto;padding:0 10px;gap:4px;">
                     <i class="fas fa-info-circle"></i> <span style="font-size:10px;">تفاصيل</span>
                 </button>
             </td>
@@ -497,8 +515,10 @@ async function loadStatsData() {
         if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">لا توجد بيانات</td></tr>'; return; }
         tbody.innerHTML = data.map(d => {
             const statusBadge = d.status === 'active' ? '<span class="badge badge-active">نشط</span>' : '<span class="badge badge-banned">محظور</span>';
+            const safeName = escapeHtml(d.device_name || d.device_id);
+            const safeId = escapeHtml(d.device_id);
             return `<tr>
-                <td style="font-size:13px;font-weight:700;color:var(--neon);" title="${d.device_id}">📱 ${d.device_name || d.device_id}</td>
+                <td style="font-size:13px;font-weight:700;color:var(--neon);" title="${safeId}">📱 ${safeName}</td>
                 <td>${formatRelative(d.last_seen)}</td>
                 <td><b style="color:#f0abfc;">${d.total_runs || 0}</b></td>
                 <td><b style="color:#a5b4fc;">${d.total_minutes || 0} د</b></td>
@@ -843,7 +863,9 @@ window.openRenewModal = (deviceId) => {
 
     // عرض اسم الهاتف والاشتراك الحالي
     const nameEl    = document.getElementById('renewUserName');
-    const phoneName = user?.device_name || `هاتف (${deviceId?.substring(0,8)})`;
+    const safeName   = escapeHtml(user?.device_name);
+    const safeId     = escapeHtml(deviceId);
+    const phoneName  = safeName || `هاتف (${safeId.substring(0,8)})`;
     if (lic?.expires_at) {
         const diff     = new Date(lic.expires_at) - new Date();
         const daysLeft = Math.ceil(diff / 86400000);
