@@ -223,13 +223,13 @@ function applyUserFilter() {
         if (activeA !== activeB) {
             return activeA ? -1 : 1;
         }
-        const runsA = a.total_runs || 0;
-        const runsB = b.total_runs || 0;
+        const runsA = parseInt(a.total_runs) || 0;
+        const runsB = parseInt(b.total_runs) || 0;
         if (runsA !== runsB) {
             return runsB - runsA;
         }
-        const minsA = a.total_minutes || 0;
-        const minsB = b.total_minutes || 0;
+        const minsA = parseInt(a.total_minutes) || 0;
+        const minsB = parseInt(b.total_minutes) || 0;
         return minsB - minsA;
     });
 
