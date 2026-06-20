@@ -126,10 +126,8 @@ btnGenerateKey.addEventListener('click', async () => {
     const days = parseInt(inputDays.value) || 30;
     const isFree = checkFreeTrial.checked;
     
-    // Generate Random Key: SHARK-XXXX-XXXX
-    const randomPart1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const randomPart2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const newKey = `SHARK-${randomPart1}-${randomPart2}`;
+    // Generate Random Key (12-digit numeric)
+    const newKey = rndNum(12);
     
     const expireDate = new Date();
     expireDate.setDate(expireDate.getDate() + days);
@@ -179,3 +177,11 @@ btnRefresh.addEventListener('click', loadDashboardData);
 
 // Init
 document.addEventListener('DOMContentLoaded', loadDashboardData);
+
+function rndNum(length = 12) {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += Math.floor(Math.random() * 10).toString();
+    }
+    return result;
+}

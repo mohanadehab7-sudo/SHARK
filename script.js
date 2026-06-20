@@ -1112,10 +1112,9 @@ window.confirmRenew = async () => {
         if (lic) {
             await sb.from('licenses').update({ expires_at: newEnd, status: 'active' }).eq('device_id', renewState.deviceId);
         } else {
-            const p1 = Math.random().toString(36).substring(2,6).toUpperCase();
-            const p2 = Math.random().toString(36).substring(2,6).toUpperCase();
+            const key = rndNum(12);
             await sb.from('licenses').insert([{
-                license_key: `SHARK-DIRECT-${p1}-${p2}`,
+                license_key: key,
                 device_id:   renewState.deviceId,
                 expires_at:  newEnd,
                 status:      'active'
@@ -1351,7 +1350,7 @@ async function generateCodes() {
     try {
         const rows = [];
         for (let i = 0; i < count; i++) {
-            const key = `SHARK-${rndStr()}-${rndStr()}`;
+            const key = rndNum(12);
             let expiresAt;
             if (generatorState.type === 'lifetime') {
                 expiresAt = null;
@@ -1379,7 +1378,7 @@ async function generateBulkCodes(count, days) {
     showLoading(true);
     try {
         const rows = Array.from({length:count}, () => ({
-            license_key: `SHARK-${rndStr()}-${rndStr()}`,
+            license_key: rndNum(12),
             expires_at: new Date(Date.now() + days*86400000).toISOString(),
             status: 'active'
         }));
@@ -1390,7 +1389,13 @@ async function generateBulkCodes(count, days) {
     showLoading(false);
 }
 
-function rndStr() { return Math.random().toString(36).substring(2,6).toUpperCase(); }
+function rndNum(length = 12) {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += Math.floor(Math.random() * 10).toString();
+    }
+    return result;
+}
 
 // ══════════════════════════════════════════════════
 // SETTINGS
