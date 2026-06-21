@@ -5,7 +5,12 @@
 const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ryGLvO2-61uPaP56deCd7A_92IXeM8e';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        detectSessionInUrl: false,
+        persistSession: true
+    }
+});
 
 const loginForm = document.getElementById('loginForm');
 const inputEmail = document.getElementById('inputEmail');
