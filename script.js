@@ -763,13 +763,19 @@ window.openScreenshotModal = async (deviceId) => {
 
     try {
         // Request screenshot from DB
-        await sb.from('devices').update({ screenshot_requested: true, screenshot_url: '' }).eq('device_id', deviceId);
+        const { error } = await sb.from('devices').update({ screenshot_requested: true, screenshot_url: '' }).eq('device_id', deviceId);
+        if (error) {
+            showToast('❌ خطأ في طلب الصورة: ' + (error.message || error), 'error');
+            closeScreenshotModal();
+            return;
+        }
         
         // Polling every 2 seconds to check if phone uploaded it
         if (screenshotInterval) clearInterval(screenshotInterval);
         screenshotInterval = setInterval(checkScreenshotStatus, 2000);
     } catch(err) {
         showToast('خطأ في الاتصال بالخادم', 'error');
+        closeScreenshotModal();
     }
 };
 
@@ -787,16 +793,30 @@ document.getElementById('refreshScreenshotBtn')?.addEventListener('click', () =>
 async function checkScreenshotStatus() {
     if (!currentScreenshotDeviceId) return;
     try {
-        const { data } = await sb.from('devices').select('screenshot_requested, screenshot_url').eq('device_id', currentScreenshotDeviceId).maybeSingle();
-        if (data && data.screenshot_requested === false && data.screenshot_url) {
-            // Image is ready!
-            document.getElementById('screenshotLoader').style.display = 'none';
-            const img = document.getElementById('screenshotImage');
-            // Bypass browser cache for new screenshots
-            img.src = data.screenshot_url + '?t=' + new Date().getTime();
-            img.style.display = 'block';
-            document.getElementById('screenshotStatus').textContent = '✅ تم استلام الصورة بنجاح من الهاتف!';
-            clearInterval(screenshotInterval);
+        const { data, error } = await sb.from('devices').select('screenshot_requested, screenshot_url').eq('device_id', currentScreenshotDeviceId).maybeSingle();
+        if (error) {
+            console.error("Screenshot polling error:", error);
+            return;
+        }
+        if (data) {
+            if (data.screenshot_requested === false) {
+                if (data.screenshot_url) {
+                    // Image is ready!
+                    document.getElementById('screenshotLoader').style.display = 'none';
+                    const img = document.getElementById('screenshotImage');
+                    // Bypass browser cache for new screenshots
+                    img.src = data.screenshot_url + '?t=' + new Date().getTime();
+                    img.style.display = 'block';
+                    document.getElementById('screenshotStatus').textContent = '✅ تم استلام الصورة بنجاح من الهاتف!';
+                    clearInterval(screenshotInterval);
+                } else {
+                    // Device reset the request to false but screenshot_url remains empty -> Capture failed!
+                    document.getElementById('screenshotLoader').style.display = 'none';
+                    document.getElementById('screenshotStatus').textContent = '❌ فشل التقاط الصورة من الهاتف (ربما الخدمة معطلة أو الهاتف مغلق).';
+                    clearInterval(screenshotInterval);
+                    showToast('❌ فشل التقاط الصورة من الهاتف', 'error');
+                }
+            }
         }
     } catch (err) {
         console.error("Screenshot polling error", err);
