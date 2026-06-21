@@ -10,13 +10,18 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const loginForm = document.getElementById('loginForm');
 const inputEmail = document.getElementById('inputEmail');
 const inputPassword = document.getElementById('inputPassword');
+const inputServiceRole = document.getElementById('inputServiceRole');
 const errorMsg = document.getElementById('errorMsg');
 const loader = document.getElementById('loader');
 
 // Check if already logged in
 async function checkSession() {
+    // Prefill service role key if saved
+    if (localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY')) {
+        inputServiceRole.value = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
+    }
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    if (session && localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY')) {
         window.location.href = 'index.html';
     }
 }
@@ -29,6 +34,14 @@ loginForm.addEventListener('submit', async (e) => {
 
     const email = inputEmail.value.trim();
     const password = inputPassword.value;
+    const serviceRoleKey = inputServiceRole.value.trim();
+
+    if (!serviceRoleKey) {
+        loader.classList.add('hidden');
+        errorMsg.innerText = 'من فضلك أدخل مفتاح Service Role!';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
 
     try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -37,6 +50,9 @@ loginForm.addEventListener('submit', async (e) => {
         });
 
         if (error) throw error;
+
+        // Save service role key to localStorage
+        localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', serviceRoleKey);
 
         // Success! Redirect to dashboard
         window.location.href = 'index.html';

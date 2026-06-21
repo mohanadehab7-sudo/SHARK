@@ -2,13 +2,22 @@
 // 🦈 SHARK BOT ADMIN DASHBOARD — SCRIPT V7.1
 // ════════════════════════════════════════════════════
 
-const SUPABASE_URL     = 'https://heeessxpeaelsjpvdrgh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ryGLvO2-61uPaP56deCd7A_92IXeM8e';
+const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
+const SUPABASE_SERVICE_ROLE_KEY = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+    window.location.href = 'login.html';
+}
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
         detectSessionInUrl: false,
         persistSession: true,
+    },
+    global: {
+        headers: {
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
     }
 });
 
@@ -66,9 +75,9 @@ window.addEventListener('load', async () => {
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
-    mainApp.style.display = 'none';
-    loginScreen.style.display = 'flex';
+    localStorage.removeItem('SUPABASE_SERVICE_ROLE_KEY');
     currentUser = null;
+    window.location.href = 'login.html';
 });
 
 function showMainApp() {

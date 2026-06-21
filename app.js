@@ -3,9 +3,23 @@
 // ==========================================
 
 const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ryGLvO2-61uPaP56deCd7A_92IXeM8e';
+const SUPABASE_SERVICE_ROLE_KEY = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+    window.location.href = 'login.html';
+}
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+        detectSessionInUrl: false,
+        persistSession: true,
+    },
+    global: {
+        headers: {
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+    }
+});
 
 // DOM Elements
 const tableBody = document.getElementById('tableBody');
@@ -33,6 +47,7 @@ async function enforceAuth() {
 // Logout
 btnLogout?.addEventListener('click', async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('SUPABASE_SERVICE_ROLE_KEY');
     window.location.href = 'login.html';
 });
 
