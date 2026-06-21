@@ -16,6 +16,10 @@ const loader = document.getElementById('loader');
 
 // Check if already logged in
 async function checkSession() {
+    // Save to localStorage if defined globally in config.js
+    if (window.SUPABASE_SERVICE_ROLE_KEY) {
+        localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
+    }
     // Prefill service role key if saved
     if (localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY')) {
         inputServiceRole.value = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');

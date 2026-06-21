@@ -3,7 +3,11 @@
 // ════════════════════════════════════════════════════
 
 const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
+let SUPABASE_SERVICE_ROLE_KEY = window.SUPABASE_SERVICE_ROLE_KEY || localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
+
+if (window.SUPABASE_SERVICE_ROLE_KEY) {
+    localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
+}
 
 if (!SUPABASE_SERVICE_ROLE_KEY) {
     window.location.href = 'login.html';
