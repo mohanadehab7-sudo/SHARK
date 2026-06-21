@@ -5,7 +5,7 @@
 const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ryGLvO2-61uPaP56deCd7A_92IXeM8e';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
         detectSessionInUrl: false,
         persistSession: true
@@ -47,7 +47,7 @@ async function checkSession() {
     if (savedKey) {
         inputServiceRole.value = savedKey;
     }
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sbClient.auth.getSession();
     if (session && savedKey) {
         window.location.href = 'index.html';
     }
@@ -71,7 +71,7 @@ loginForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await sbClient.auth.signInWithPassword({
             email: email,
             password: password,
         });

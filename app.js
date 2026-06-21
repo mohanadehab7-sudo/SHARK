@@ -9,7 +9,7 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
     window.location.href = 'login.html';
 }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
         detectSessionInUrl: false,
         persistSession: true,
@@ -36,7 +36,7 @@ const statTotalRuns = document.getElementById('statTotalRuns');
 
 // Auth Check Guard
 async function enforceAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sbClient.auth.getSession();
     if (!session) {
         window.location.href = 'login.html';
         return false;
@@ -46,7 +46,7 @@ async function enforceAuth() {
 
 // Logout
 btnLogout?.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sbClient.auth.signOut();
     localStorage.removeItem('SUPABASE_SERVICE_ROLE_KEY');
     window.location.href = 'login.html';
 });
@@ -57,7 +57,7 @@ async function loadDashboardData() {
 
     try {
         // Fetch Licenses
-        const { data: licenses, error: licErr } = await supabase
+        const { data: licenses, error: licErr } = await sbClient
             .from('licenses')
             .select(`
                 *,
@@ -148,7 +148,7 @@ btnGenerateKey.addEventListener('click', async () => {
     expireDate.setDate(expireDate.getDate() + days);
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sbClient
             .from('licenses')
             .insert([
                 { 
@@ -175,7 +175,7 @@ btnGenerateKey.addEventListener('click', async () => {
 window.toggleSuspend = async (licenseId, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
     try {
-        await supabase.from('licenses').update({ status: newStatus }).eq('id', licenseId);
+        await sbClient.from('licenses').update({ status: newStatus }).eq('id', licenseId);
         loadDashboardData();
     } catch(err) { alert("فشل التحديث"); }
 };
@@ -183,7 +183,7 @@ window.toggleSuspend = async (licenseId, currentStatus) => {
 window.banDevice = async (deviceId) => {
     if(!confirm("هل أنت متأكد من حظر هذا الجهاز تماماً؟")) return;
     try {
-        await supabase.from('devices').update({ status: 'banned' }).eq('device_id', deviceId);
+        await sbClient.from('devices').update({ status: 'banned' }).eq('device_id', deviceId);
         loadDashboardData();
     } catch(err) { alert("فشل الحظر"); }
 };
