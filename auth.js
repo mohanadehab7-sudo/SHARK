@@ -19,18 +19,36 @@ const inputServiceRole = document.getElementById('inputServiceRole');
 const errorMsg = document.getElementById('errorMsg');
 const loader = document.getElementById('loader');
 
+function safeGetItem(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        console.warn("localStorage access denied:", e);
+        return null;
+    }
+}
+
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        console.warn("localStorage access denied:", e);
+    }
+}
+
 // Check if already logged in
 async function checkSession() {
     // Save to localStorage if defined globally in config.js
     if (window.SUPABASE_SERVICE_ROLE_KEY) {
-        localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
+        safeSetItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
     }
     // Prefill service role key if saved
-    if (localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY')) {
-        inputServiceRole.value = localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
+    const savedKey = safeGetItem('SUPABASE_SERVICE_ROLE_KEY');
+    if (savedKey) {
+        inputServiceRole.value = savedKey;
     }
     const { data: { session } } = await supabase.auth.getSession();
-    if (session && localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY')) {
+    if (session && savedKey) {
         window.location.href = 'index.html';
     }
 }
@@ -61,7 +79,7 @@ loginForm.addEventListener('submit', async (e) => {
         if (error) throw error;
 
         // Save service role key to localStorage
-        localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', serviceRoleKey);
+        safeSetItem('SUPABASE_SERVICE_ROLE_KEY', serviceRoleKey);
 
         // Success! Redirect to dashboard
         window.location.href = 'index.html';

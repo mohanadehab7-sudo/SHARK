@@ -2,11 +2,36 @@
 // 🦈 SHARK BOT ADMIN DASHBOARD — SCRIPT V7.1
 // ════════════════════════════════════════════════════
 
+function safeGetItem(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        console.warn("localStorage access denied:", e);
+        return null;
+    }
+}
+
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        console.warn("localStorage access denied:", e);
+    }
+}
+
+function safeRemoveItem(key) {
+    try {
+        localStorage.removeItem(key);
+    } catch (e) {
+        console.warn("localStorage access denied:", e);
+    }
+}
+
 const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
-let SUPABASE_SERVICE_ROLE_KEY = window.SUPABASE_SERVICE_ROLE_KEY || localStorage.getItem('SUPABASE_SERVICE_ROLE_KEY');
+let SUPABASE_SERVICE_ROLE_KEY = window.SUPABASE_SERVICE_ROLE_KEY || safeGetItem('SUPABASE_SERVICE_ROLE_KEY');
 
 if (window.SUPABASE_SERVICE_ROLE_KEY) {
-    localStorage.setItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
+    safeSetItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 if (!SUPABASE_SERVICE_ROLE_KEY) {
@@ -79,7 +104,7 @@ window.addEventListener('load', async () => {
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
-    localStorage.removeItem('SUPABASE_SERVICE_ROLE_KEY');
+    safeRemoveItem('SUPABASE_SERVICE_ROLE_KEY');
     currentUser = null;
     window.location.href = 'login.html';
 });
