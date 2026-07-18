@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shark Bot - Admin Login</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#0a0f18] text-gray-200 min-h-screen font-sans antialiased flex items-center justify-center relative overflow-hidden">
+    
+    <!-- Background Effects -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#00f3ff] rounded-full blur-[150px] opacity-10 pointer-events-none"></div>
+
+    <div class="glass-panel w-full max-w-md p-8 rounded-3xl border border-[#00f3ff]/20 relative z-10 mx-4">
+        
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#0a0f18] border-2 border-[#00f3ff] shadow-[0_0_20px_rgba(0,243,255,0.4)] mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="44" height="44" fill="none">
+                    <!-- Shark Body -->
+                    <ellipse cx="30" cy="38" rx="22" ry="12" fill="#00f3ff" opacity="0.15" />
+                    <path d="M8 40 Q18 28 30 30 Q44 32 56 38 Q44 46 30 46 Q16 46 8 40Z" fill="#00f3ff" opacity="0.9"/>
+                    <!-- Dorsal Fin -->
+                    <path d="M28 30 L22 12 Q24 16 30 20 L34 30Z" fill="#00f3ff"/>
+                    <!-- Tail Fin -->
+                    <path d="M54 36 L62 28 L62 48 L54 41Z" fill="#00f3ff" opacity="0.85"/>
+                    <!-- Eye -->
+                    <circle cx="18" cy="38" r="2.5" fill="#0a0f18"/>
+                    <circle cx="17.5" cy="37.5" r="0.8" fill="#ffffff" opacity="0.7"/>
+                    <!-- Mouth lines -->
+                    <path d="M10 42 Q14 45 20 43" stroke="#0a0f18" stroke-width="1" fill="none" stroke-linecap="round"/>
+                    <!-- Pectoral Fin -->
+                    <path d="M22 38 L16 48 Q22 44 28 42Z" fill="#00c8d4" opacity="0.8"/>
+                    <!-- Glow lines -->
+                    <path d="M28 30 L22 12" stroke="#00f3ff" stroke-width="0.5" opacity="0.5"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#3b82f6]">SHARK ADMIN</h1>
+            <p class="text-gray-400 text-sm mt-2 font-mono tracking-widest">SECURE NODE TERMINAL</p>
+        </div>
+
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 font-mono">ADMIN_EMAIL</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="email" id="inputEmail" required placeholder="admin@sharkcore.com" class="w-full bg-[#0f172a] border border-[#3b82f6]/30 rounded-xl pr-12 pl-4 py-3 text-white focus:outline-none focus:border-[#00f3ff] focus:ring-1 focus:ring-[#00f3ff] transition-all" style="direction: ltr;">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 font-mono">ACCESS_CODE</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="password" id="inputPassword" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-[#3b82f6]/30 rounded-xl pr-12 pl-4 py-3 text-white focus:outline-none focus:border-[#00f3ff] focus:ring-1 focus:ring-[#00f3ff] transition-all" style="direction: ltr;">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 font-mono">SERVICE_ROLE_KEY</label>
+                <div class="relative">
+                    <i class="fa-solid fa-key absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="password" id="inputServiceRole" required placeholder="eyJhbGciOi..." class="w-full bg-[#0f172a] border border-[#3b82f6]/30 rounded-xl pr-12 pl-4 py-3 text-white focus:outline-none focus:border-[#00f3ff] focus:ring-1 focus:ring-[#00f3ff] transition-all" style="direction: ltr;">
+                </div>
+            </div>
+
+            <div id="errorMsg" class="hidden text-red-400 text-sm text-center font-bold bg-red-900/20 py-2 rounded-lg border border-red-500/30">
+                <!-- Error msg here -->
+            </div>
+
+            <button type="submit" id="btnLogin" class="w-full neon-btn py-4 rounded-xl font-bold tracking-widest text-[#0a0f18] flex items-center justify-center gap-2 mt-4">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>INITIALIZE LINK</span>
+            </button>
+        </form>
+
+        <div class="text-center mt-6 text-xs text-gray-500 font-mono">
+            V7.1 ENCRYPTED CONNECTION
+        </div>
+    </div>
+
+    <!-- Overlay Loader -->
+    <div id="loader" class="fixed inset-0 bg-[#0a0f18]/90 z-[100] flex flex-col items-center justify-center hidden">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-[#00f3ff] mb-4"></i>
+        <p class="text-[#00f3ff] font-mono tracking-widest">AUTHENTICATING...</p>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
