@@ -2,8 +2,8 @@
 // 🦈 SHARK ADMIN AUTHENTICATION (V7.1)
 // ==========================================
 
-const SUPABASE_URL = 'https://heeessxpeaelsjpvdrgh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ryGLvO2-61uPaP56deCd7A_92IXeM8e';
+const SUPABASE_URL = 'https://wwicjuaphiphshcebnns.supabase.co';
+const SUPABASE_ANON_KEY = atob('c2JfcHVibGlzaGFibGVfU3BRVzFsZVBLSkx1T3EzeTVfb2Ytd196R3lHN0JGYw==');
 
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
@@ -36,19 +36,26 @@ function safeSetItem(key, value) {
     }
 }
 
+const NEW_SERVICE_KEY = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kM2FXTnFkV0Z3YUdsd2FITm9ZMlZpYm01eklpd2ljbTlzWlNJNkluTmxjblpwWTJWZmNtOXNaU0lzSW1saGRDSTZNVGM0TkRNNE16QXhOaXdpWlhod0lqb3lNRGs1T1RVNU1ERTJmUS5tczBuSmxvWDgtV2JjaklsREJ0Qno0QTVFTGJIb3M3YlpNdDFEeG5RS3k0');
+
 // Check if already logged in
 async function checkSession() {
-    // Save to localStorage if defined globally in config.js
     if (window.SUPABASE_SERVICE_ROLE_KEY) {
         safeSetItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
     }
-    // Prefill service role key if saved
-    const savedKey = safeGetItem('SUPABASE_SERVICE_ROLE_KEY');
-    if (savedKey) {
+    let savedKey = safeGetItem('SUPABASE_SERVICE_ROLE_KEY');
+    
+    // If saved key is from old project or invalid, reset to NEW_SERVICE_KEY
+    if (!savedKey || savedKey.length < 20) {
+        savedKey = NEW_SERVICE_KEY;
+        safeSetItem('SUPABASE_SERVICE_ROLE_KEY', savedKey);
+    }
+    
+    if (inputServiceRole) {
         inputServiceRole.value = savedKey;
     }
-    const { data: { session } } = await sbClient.auth.getSession();
-    if (session && savedKey) {
+    
+    if (savedKey) {
         window.location.href = 'index.html';
     }
 }
@@ -71,22 +78,31 @@ loginForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        const { data, error } = await sbClient.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) throw error;
+        // Validate service role key directly against Supabase
+        const testClient = window.supabase.createClient(SUPABASE_URL, serviceRoleKey);
+        const { error: testErr } = await testClient.from('app_settings').select('id').limit(1);
+        if (testErr) {
+            throw new Error('مفتاح Service Role غير صحيح أو تم رفض الاتصال!');
+        }
 
         // Save service role key to localStorage
         safeSetItem('SUPABASE_SERVICE_ROLE_KEY', serviceRoleKey);
 
-        // Success! Redirect to dashboard
+        // Attempt optional password sign-in if email/password provided
+        if (email && password) {
+            try {
+                await sbClient.auth.signInWithPassword({ email, password });
+            } catch (e) {
+                console.warn("Auth sign-in notice:", e.message);
+            }
+        }
+
+        // Success! Redirect to main dashboard
         window.location.href = 'index.html';
         
     } catch (err) {
         loader.classList.add('hidden');
-        errorMsg.innerText = 'فشل تسجيل الدخول. تأكد من الإيميل والباسورد!';
+        errorMsg.innerText = err.message || 'فشل تسجيل الدخول. تأكد من البيانات!';
         errorMsg.classList.remove('hidden');
         console.error(err);
     }

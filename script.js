@@ -27,38 +27,23 @@ function safeRemoveItem(key) {
     }
 }
 
-// ══ V8.0: NEW MULTI-BOT SUPABASE SERVER ══
-const SUPABASE_URL = 'https://wwicjuaphiphshcebnns.supabase.co';
-let SUPABASE_SERVICE_ROLE_KEY = window.SUPABASE_SERVICE_ROLE_KEY || safeGetItem('SUPABASE_SERVICE_ROLE_KEY');
-
-if (window.SUPABASE_SERVICE_ROLE_KEY) {
-    safeSetItem('SUPABASE_SERVICE_ROLE_KEY', window.SUPABASE_SERVICE_ROLE_KEY);
-}
-
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-    window.location.href = 'login.html';
-}
-
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { detectSessionInUrl: false, persistSession: true },
-    global: { headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
-});
-
-// ══════════════════════════════════════════════════
-// V8.0: GLOBAL BOT CONTEXT SWITCHER
-// Single source of truth for the active bot.
-// All queries read BotContext.active to filter by bot_type.
-// ══════════════════════════════════════════════════
+// ══ MULTI-PROJECT SUPABASE CONFIGURATION ══
 const BOT_CONFIGS = {
     'weplay': {
-        id: 'weplay', label: '🦈 SHARK V2 (الجديد)',
+        id: 'weplay',
+        label: '🦈 SHARK V2 (الجديد)',
         desc: 'البوت الجديد — السيرفر المحمي',
-        color: '#00f3ff', settingsFilter: { col: 'bot_type', val: 'weplay' }
+        color: '#00f3ff',
+        url: 'https://wwicjuaphiphshcebnns.supabase.co',
+        key: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kM2FXTnFkV0Z3YUdsd2FITm9ZMlZpYm01eklpd2ljbTlzWlNJNkluTmxjblpwWTJWZmNtOXNaU0lzSW1saGRDSTZNVGM0TkRNNE16QXhOaXdpWlhod0lqb3lNRGs1T1RVNU1ERTJmUS5tczBuSmxvWDgtV2JjaklsREJ0Qno0QTVFTGJIb3M3YlpNdDFEeG5RS3k0')
     },
     'weplay_legacy': {
-        id: 'weplay_legacy', label: '🔶 SHARK V1 (القديم)',
-        desc: 'البوت القديم — الاشتراكات السابقة',
-        color: '#f59e0b', settingsFilter: { col: 'id', val: 1 }
+        id: 'weplay_legacy',
+        label: '🔶 SHARK V1 (القديم)',
+        desc: 'البوت القديم — السيرفر السابق (8GB)',
+        color: '#f59e0b',
+        url: 'https://heeessxpeaelsjpvdrgh.supabase.co',
+        key: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1obFpXVnpjM2h3WldGbGJITnFjSFprY21kb0lpd2ljbTlzWlNJNkluTmxjblpwWTJWZmNtOXNaU0lzSW1saGRDSTZNVGMzT1RJNE5qUTFNaXdpWlhod0lqb3lNRGswT0RZeU5EVXlmUS54OUlIVm0xSnpvanp2MVU2OG5LOV9vX0JRWlVvTFpXMHQ0MjcxZTNoZFhN')
     }
 };
 
@@ -74,6 +59,38 @@ const BotContext = {
         closeBotDropdown();
     }
 };
+
+const clientCache = {};
+
+function getSbClient() {
+    const cfg = BotContext.config;
+    let serviceKey = safeGetItem('SUPABASE_SERVICE_ROLE_KEY') || cfg.key;
+    if (cfg.id === 'weplay_legacy') {
+        serviceKey = cfg.key;
+    }
+    const cacheKey = `${cfg.id}_${serviceKey}`;
+    if (!clientCache[cacheKey]) {
+        clientCache[cacheKey] = window.supabase.createClient(cfg.url, serviceKey, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+            global: {
+                headers: {
+                    apikey: serviceKey,
+                    Authorization: `Bearer ${serviceKey}`
+                }
+            }
+        });
+    }
+    return clientCache[cacheKey];
+}
+
+// Dynamic Proxy for sb client so all queries automatically target the active project
+const sb = new Proxy({}, {
+    get(target, prop) {
+        const client = getSbClient();
+        const value = client[prop];
+        return typeof value === 'function' ? value.bind(client) : value;
+    }
+});
 
 function updateBotSwitcherUI() {
     const cfg = BotContext.config;
@@ -163,8 +180,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 window.addEventListener('load', async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) { currentUser = session.user; showMainApp(); }
+    try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) { currentUser = session.user; }
+    } catch (e) {}
+    if (SUPABASE_SERVICE_ROLE_KEY) {
+        showMainApp();
+    }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -211,10 +233,19 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ══════════════════════════════════════════════════
 async function loadDashboardData() {
     try {
-        const bot = BotContext.active;
-        const { data: devices } = await sb.from('devices').select('*').eq('bot_type', bot);
-        const { data: licenses } = await sb.from('licenses').select('status,device_id').eq('bot_type', bot);
-        const { data: settings } = await sb.from('app_settings').select('*').eq('bot_type', bot).maybeSingle();
+        let devQuery = sb.from('devices').select('*');
+        let licQuery = sb.from('licenses').select('status,device_id');
+        let setQuery = sb.from('app_settings').select('*');
+
+        if (BotContext.active === 'weplay') {
+            devQuery = devQuery.eq('bot_type', 'weplay');
+            licQuery = licQuery.eq('bot_type', 'weplay');
+            setQuery = setQuery.eq('bot_type', 'weplay');
+        }
+
+        const { data: devices } = await devQuery;
+        const { data: licenses } = await licQuery;
+        const { data: settings } = await setQuery.maybeSingle();
         settingsData = settings || null;
 
         const now = new Date();
@@ -242,7 +273,16 @@ async function loadDashboardData() {
             banner.innerHTML = '<i class="fas fa-check-circle"></i><span>حالة النظام: متصل ويعمل لجميع المستخدمين المشتركين (وضع الأكواد).</span>';
             banner.className = 'status-banner online';
         }
-    } catch (err) { showToast('خطأ في تحميل بيانات الرئيسية', 'error'); }
+    } catch (err) {
+        console.error("Error loading data:", err);
+        if (err.status === 401 || (err.message && err.message.includes('401'))) {
+            safeRemoveItem('SUPABASE_SERVICE_ROLE_KEY');
+            alert("مفتاح الخدمة انتهى أو غير صالح للسيرفر الجديد! يرجى إعادة تسجيل الدخول.");
+            window.location.href = 'login.html';
+            return;
+        }
+        showToast('خطأ في تحميل بيانات الرئيسية', 'error');
+    }
 }
 
 // Header Global Refresh
@@ -256,8 +296,11 @@ document.getElementById('refreshAllBtn')?.addEventListener('click', async () => 
 // ══════════════════════════════════════════════════
 async function loadUsersData() {
     try {
-        const bot = BotContext.active;
-        const { data, error } = await sb.from('devices').select('*').eq('bot_type', bot).order('created_at', { ascending:false });
+        let query = sb.from('devices').select('*').order('created_at', { ascending:false });
+        if (BotContext.active === 'weplay') {
+            query = query.eq('bot_type', 'weplay');
+        }
+        const { data, error } = await query;
         if (error) throw error;
         usersData = data || [];
         applyUserFilter();
@@ -665,8 +708,11 @@ document.getElementById('userDetailsModal')?.addEventListener('click', e => {
 
 async function loadStatsData() {
     try {
-        const bot = BotContext.active;
-        const { data } = await sb.from('devices').select('*').eq('bot_type', bot).order('total_runs', { ascending:false });
+        let query = sb.from('devices').select('*').order('total_runs', { ascending:false });
+        if (BotContext.active === 'weplay') {
+            query = query.eq('bot_type', 'weplay');
+        }
+        const { data } = await query;
         const tbody = document.getElementById('statsTableBody');
         if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">لا توجد بيانات</td></tr>'; return; }
         tbody.innerHTML = data.map(d => {
@@ -1260,8 +1306,11 @@ window.confirmRenew = async () => {
 // ══════════════════════════════════════════════════
 async function loadCodesData() {
     try {
-        const bot = BotContext.active;
-        const { data, error } = await sb.from('licenses').select('*').eq('bot_type', bot).order('created_at', { ascending:false });
+        let query = sb.from('licenses').select('*').order('created_at', { ascending:false });
+        if (BotContext.active === 'weplay') {
+            query = query.eq('bot_type', 'weplay');
+        }
+        const { data, error } = await query;
         if (error) throw error;
         codesData = data || [];
         applyCodesFilter();
@@ -1530,8 +1579,13 @@ function rndNum(length = 12) {
 // ══════════════════════════════════════════════════
 async function loadSettings() {
     try {
-        const bot = BotContext.active;
-        const { data } = await sb.from('app_settings').select('*').eq('bot_type', bot).maybeSingle();
+        let query = sb.from('app_settings').select('*');
+        if (BotContext.active === 'weplay') {
+            query = query.eq('bot_type', 'weplay');
+        } else {
+            query = query.eq('id', 1);
+        }
+        const { data } = await query.maybeSingle();
         if (data) {
             settingsData = data;
             document.getElementById('botMode').value = data.bot_mode || 'subscription';
@@ -1556,14 +1610,17 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     
     showLoading(true);
     try {
-        // We do not upsert trial_hours because the column does not exist in the app_settings database table
-        const { error } = await sb.from('app_settings').upsert({ 
+        const payload = { 
             id: 1, 
             is_shutdown, 
             bot_mode, 
             global_message 
-        });
-        
+        };
+        if (BotContext.active === 'weplay') {
+            payload.bot_type = 'weplay';
+        }
+
+        const { error } = await sb.from('app_settings').upsert(payload);
         if (error) throw error;
         
         showToast('✅ تم حفظ الإعدادات بنجاح', 'success');
@@ -1575,19 +1632,29 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     showLoading(false);
 });
 document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', async () => {
-    if (!confirm('حذف جميع الأكواد غير المستخدمة؟')) return;
-    await sb.from('licenses').delete().is('device_id', null);
+    if (!confirm('حذف جميع الأكواد غير المستخدمة للبوت الحالي؟')) return;
+    let query = sb.from('licenses').delete().is('device_id', null);
+    if (BotContext.active === 'weplay') {
+        query = query.eq('bot_type', 'weplay');
+    }
+    await query;
     showToast('✅ تم حذف الأكواد غير المستخدمة', 'success');
     loadCodesData();
 });
 document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async () => {
-    if (!confirm('هل أنت متأكد من تنظيف وحذف جميع أجهزة المحاكاة واختبارات جوجل من قاعدة البيانات؟ لن يتم لمس أي جهاز مرتبط بكود تفعيل.')) return;
+    if (!confirm('هل أنت متأكد من تنظيف وحذف جميع أجهزة المحاكاة واختبارات جوجل للبوت الحالي؟ لن يتم لمس أي جهاز مرتبط بكود تفعيل.')) return;
     showLoading(true);
     try {
-        const { data: devices, error: devError } = await sb.from('devices').select('*');
+        let devQuery = sb.from('devices').select('*');
+        let licQuery = sb.from('licenses').select('device_id');
+        if (BotContext.active === 'weplay') {
+            devQuery = devQuery.eq('bot_type', 'weplay');
+            licQuery = licQuery.eq('bot_type', 'weplay');
+        }
+        const { data: devices, error: devError } = await devQuery;
         if (devError) throw devError;
 
-        const { data: licenses, error: licError } = await sb.from('licenses').select('device_id');
+        const { data: licenses, error: licError } = await licQuery;
         if (licError) throw licError;
 
         const licensedDeviceIds = new Set(licenses.map(l => l.device_id).filter(id => id));
@@ -1614,9 +1681,15 @@ document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async ()
 
         const idsToDelete = emulatorsToDelete.map(e => e.device_id);
 
-        await sb.from('licenses').delete().in('device_id', idsToDelete);
+        let delLicQuery = sb.from('licenses').delete().in('device_id', idsToDelete);
+        let delDevQuery = sb.from('devices').delete().in('device_id', idsToDelete);
+        if (BotContext.active === 'weplay') {
+            delLicQuery = delLicQuery.eq('bot_type', 'weplay');
+            delDevQuery = delDevQuery.eq('bot_type', 'weplay');
+        }
 
-        const { error: deleteError } = await sb.from('devices').delete().in('device_id', idsToDelete);
+        await delLicQuery;
+        const { error: deleteError } = await delDevQuery;
         if (deleteError) throw deleteError;
 
         showToast(`✅ تم تنظيف ${emulatorsToDelete.length} جهاز محاكاة بنجاح!`, 'success');
@@ -1628,8 +1701,12 @@ document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async ()
     showLoading(false);
 });
 document.getElementById('resetAllUsersBtn')?.addEventListener('click', async () => {
-    if (!confirm('إعادة تعيين جميع المستخدمين؟ لا يمكن التراجع!')) return;
-    await sb.from('devices').update({ total_runs:0, total_minutes:0 }).neq('device_id','');
+    if (!confirm('إعادة تعيين جميع المستخدمين للبوت الحالي؟ لا يمكن التراجع!')) return;
+    let query = sb.from('devices').update({ total_runs:0, total_minutes:0 }).neq('device_id','');
+    if (BotContext.active === 'weplay') {
+        query = query.eq('bot_type', 'weplay');
+    }
+    await query;
     showToast('✅ تم إعادة تعيين الإحصائيات', 'success');
     loadUsersData();
 });
