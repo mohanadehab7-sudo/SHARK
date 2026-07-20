@@ -1239,10 +1239,10 @@ async function revokeDeviceLicense(deviceId) {
             showLoading(false);
             return;
         }
-        // فك ارتباط الكود بالجهاز بالـ id مش device_id عشان بنعمله null
+        // فك ارتباط الكود بالجهاز بالـ license_key مش device_id عشان بنعمله null
         const { error } = await sb.from('licenses')
             .update({ device_id: null, expires_at: null, status: 'active' })
-            .eq('id', lic.id);
+            .eq('license_key', lic.license_key);
 
         if (error) throw error;
 
@@ -1388,10 +1388,10 @@ function displayCodes(codes) {
             <td style="font-size:12px;color:var(--muted);">${c.expires_at ? formatDate(c.expires_at) : '♾️'}</td>
             <td>
                 ${c.status === 'active'
-                    ? `<button class="table-btn block" onclick="suspendCode('${c.id}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
-                    : `<button class="table-btn unblock" onclick="activateCode('${c.id}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
+                    ? `<button class="table-btn block" onclick="suspendCode('${c.license_key}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
+                    : `<button class="table-btn unblock" onclick="activateCode('${c.license_key}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
                 }
-                <button class="table-btn delete" onclick="deleteCode('${c.id}')" title="حذف"><i class="fas fa-trash"></i></button>
+                <button class="table-btn delete" onclick="deleteCode('${c.license_key}')" title="حذف"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -1405,21 +1405,24 @@ document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
     showToast(`✅ تم نسخ ${codesData.filter(c=>!c.device_id).length} كود`, 'success');
 });
 
-window.suspendCode = async (id) => {
-    await sb.from('licenses').update({ status:'suspended' }).eq('id', id);
+window.suspendCode = async (key) => {
+    const { error } = await sb.from('licenses').update({ status:'suspended' }).eq('license_key', key);
+    if (error) { showToast('❌ خطأ: ' + error.message, 'error'); return; }
     showToast('تم إيقاف الكود مؤقتاً', 'info');
     loadCodesData();
 };
-window.activateCode = async (id) => {
-    await sb.from('licenses').update({ status:'active' }).eq('id', id);
+window.activateCode = async (key) => {
+    const { error } = await sb.from('licenses').update({ status:'active' }).eq('license_key', key);
+    if (error) { showToast('❌ خطأ: ' + error.message, 'error'); return; }
     showToast('✅ تم إعادة تفعيل الكود', 'success');
     loadCodesData();
 };
-window.deleteCode = async (id) => {
+window.deleteCode = async (key) => {
     if (!confirm('حذف الكود نهائياً؟')) return;
-    await sb.from('licenses').delete().eq('id', id);
-    showToast('تم حذف الكود', 'success');
-    loadCodesData();
+    const { error } = await sb.from('licenses').delete().eq('license_key', key);
+    if (error) { showToast('❌ خطأ في الحذف: ' + error.message, 'error'); return; }
+    showToast('✅ تم حذف الكود بنجاح', 'success');
+    loadCodesData(); loadDashboardData();
 };
 
 // ══════════════════════════════════════════════════
