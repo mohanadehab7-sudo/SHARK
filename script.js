@@ -745,10 +745,30 @@ window.unblockUser = async (deviceId) => {
     await loadUsersData(); loadDashboardData();
 };
 window.deleteUser = async (deviceId) => {
-    if (!confirm('حذف نهائي؟ لا يمكن التراجع!')) return;
-    await sb.from('devices').delete().eq('device_id', deviceId);
-    showToast('تم الحذف', 'success');
-    await loadUsersData(); loadDashboardData();
+    showLoading(true);
+    try {
+        // 1. Unbind any license bound to this device first to prevent 409 Conflict
+        let licQuery = sb.from('licenses').update({ device_id: null, expires_at: null, status: 'active' }).eq('device_id', deviceId);
+        if (BotContext.active === 'weplay') {
+            licQuery = licQuery.eq('bot_type', 'weplay');
+        }
+        await licQuery;
+
+        // 2. Delete device row
+        let devQuery = sb.from('devices').delete().eq('device_id', deviceId);
+        if (BotContext.active === 'weplay') {
+            devQuery = devQuery.eq('bot_type', 'weplay');
+        }
+        const { error } = await devQuery;
+        if (error) throw error;
+
+        showToast('✅ تم حذف المستخدم نهائياً', 'success');
+        await Promise.all([loadCodesData(), loadUsersData(), loadDashboardData()]);
+        loadExpiryTable();
+    } catch(err) {
+        showToast('❌ خطأ في الحذف: ' + err.message, 'error');
+    }
+    showLoading(false);
 };
 
 // ══════════════════════════════════════════════════
