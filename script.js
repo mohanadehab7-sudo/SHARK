@@ -1610,17 +1610,20 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     
     showLoading(true);
     try {
-        const payload = { 
-            id: 1, 
-            is_shutdown, 
-            bot_mode, 
-            global_message 
-        };
+        let error;
         if (BotContext.active === 'weplay') {
-            payload.bot_type = 'weplay';
+            // V2: update the row where bot_type = 'weplay'
+            const { error: e } = await sb.from('app_settings')
+                .update({ is_shutdown, bot_mode, global_message })
+                .eq('bot_type', 'weplay');
+            error = e;
+        } else {
+            // V1 (legacy): update by id = 1
+            const { error: e } = await sb.from('app_settings')
+                .update({ is_shutdown, bot_mode, global_message })
+                .eq('id', 1);
+            error = e;
         }
-
-        const { error } = await sb.from('app_settings').upsert(payload);
         if (error) throw error;
         
         showToast('✅ تم حفظ الإعدادات بنجاح', 'success');
@@ -1631,6 +1634,7 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     }
     showLoading(false);
 });
+
 document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', async () => {
     if (!confirm('حذف جميع الأكواد غير المستخدمة للبوت الحالي؟')) return;
     let query = sb.from('licenses').delete().is('device_id', null);
