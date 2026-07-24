@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════
-// 🦈 SHARK BOT ADMIN DASHBOARD — SCRIPT V8.0 (MULTI-BOT)
+// 🦈 SHARK BOT ADMIN DASHBOARD — SCRIPT V7.1
 // ════════════════════════════════════════════════════
 
 function safeGetItem(key) {
@@ -27,110 +27,31 @@ function safeRemoveItem(key) {
     }
 }
 
-// ══ MULTI-PROJECT SUPABASE CONFIGURATION ══
-const BOT_CONFIGS = {
-    'weplay': {
-        id: 'weplay',
-        label: '🦈 SHARK V2 (الجديد)',
-        desc: 'البوت الجديد — السيرفر المحمي',
-        color: '#00f3ff',
-        url: 'https://wwicjuaphiphshcebnns.supabase.co',
-        key: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kM2FXTnFkV0Z3YUdsd2FITm9ZMlZpYm01eklpd2ljbTlzWlNJNkluTmxjblpwWTJWZmNtOXNaU0lzSW1saGRDSTZNVGM0TkRNNE16QXhOaXdpWlhod0lqb3lNRGs1T1RVNU1ERTJmUS5tczBuSmxvWDgtV2JjaklsREJ0Qno0QTVFTGJIb3M3YlpNdDFEeG5RS3k0')
+// SECURITY V8: the dashboard now authenticates as a REAL admin via Supabase
+// Auth and talks to the DB with the PUBLIC publishable key. RLS + is_admin()
+// grant access only to users listed in public.admins. The service_role key is
+// GONE from the browser — it lives only inside Edge Functions on the server.
+const SUPABASE_URL = window.SHARK_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = window.SHARK_PUBLISHABLE_KEY;
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
     },
-    'weplay_legacy': {
-        id: 'weplay_legacy',
-        label: '🔶 SHARK V1 (القديم)',
-        desc: 'البوت القديم — السيرفر السابق (8GB)',
-        color: '#f59e0b',
-        url: 'https://heeessxpeaelsjpvdrgh.supabase.co',
-        key: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1obFpXVnpjM2h3WldGbGJITnFjSFprY21kb0lpd2ljbTlzWlNJNkluTmxjblpwWTJWZmNtOXNaU0lzSW1saGRDSTZNVGMzT1RJNE5qUTFNaXdpWlhod0lqb3lNRGswT0RZeU5EVXlmUS54OUlIVm0xSnpvanp2MVU2OG5LOV9vX0JRWlVvTFpXMHQ0MjcxZTNoZFhN')
-    }
-};
-
-const BotContext = {
-    active: safeGetItem('activeBotType') || 'weplay',
-    get config() { return BOT_CONFIGS[this.active] || BOT_CONFIGS['weplay']; },
-    switchTo(botType) {
-        this.active = botType;
-        safeSetItem('activeBotType', botType);
-        updateBotSwitcherUI();
-        loadAllData();
-        loadSettings();
-        closeBotDropdown();
-    }
-};
-
-const clientCache = {};
-
-function getSbClient() {
-    const cfg = BotContext.config;
-    let serviceKey = safeGetItem('SUPABASE_SERVICE_ROLE_KEY') || cfg.key;
-    if (cfg.id === 'weplay_legacy') {
-        serviceKey = cfg.key;
-    }
-    const cacheKey = `${cfg.id}_${serviceKey}`;
-    if (!clientCache[cacheKey]) {
-        clientCache[cacheKey] = window.supabase.createClient(cfg.url, serviceKey, {
-            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-            global: {
-                headers: {
-                    apikey: serviceKey,
-                    Authorization: `Bearer ${serviceKey}`
-                }
-            }
-        });
-    }
-    return clientCache[cacheKey];
-}
-
-// Dynamic Proxy for sb client so all queries automatically target the active project
-const sb = new Proxy({}, {
-    get(target, prop) {
-        const client = getSbClient();
-        const value = client[prop];
-        return typeof value === 'function' ? value.bind(client) : value;
-    }
 });
 
-function updateBotSwitcherUI() {
-    const cfg = BotContext.config;
-    const labelEl = document.getElementById('activeBotLabel');
-    const descEl  = document.getElementById('activeBotDesc');
-    const indicator = document.getElementById('botSwitcherIndicator');
-    if (labelEl) labelEl.textContent = cfg.label;
-    if (descEl)  descEl.textContent  = cfg.desc;
-    if (indicator) {
-        indicator.style.background = cfg.color;
-        indicator.style.boxShadow  = `0 0 10px ${cfg.color}`;
-    }
-    document.querySelectorAll('.bot-option-btn').forEach(btn => {
-        btn.classList.toggle('bot-option-active', btn.dataset.botId === BotContext.active);
-        btn.style.borderColor = btn.dataset.botId === BotContext.active ? cfg.color + '88' : 'transparent';
+// Calls the secure `admin` Edge Function (privileged actions the browser must
+// NOT do directly). The user's admin session token is attached automatically.
+async function adminCall(action, args = {}) {
+    const { data, error } = await sb.functions.invoke('admin', {
+        body: { action, ...args },
     });
-    const headerBadge = document.getElementById('headerBotBadge');
-    if (headerBadge) {
-        headerBadge.textContent = cfg.label;
-        headerBadge.style.color = cfg.color;
-        headerBadge.style.borderColor = cfg.color + '55';
-        headerBadge.style.background  = cfg.color + '18';
-    }
-    // Flash the page to indicate switch
-    document.body.style.transition = 'opacity 0.15s';
-    document.body.style.opacity = '0.7';
-    setTimeout(() => { document.body.style.opacity = '1'; }, 150);
+    if (error) throw error;
+    if (data && data.ok === false) throw new Error(data.message || 'admin action failed');
+    return data;
 }
-
-function closeBotDropdown() {
-    const dd = document.getElementById('botSwitcherDropdown');
-    if (dd) dd.style.display = 'none';
-}
-function toggleBotDropdown() {
-    const dd = document.getElementById('botSwitcherDropdown');
-    if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('#botSwitcherWrapper')) closeBotDropdown();
-});
 
 // Escape HTML to prevent Stored XSS
 function escapeHtml(str) {
@@ -180,20 +101,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 window.addEventListener('load', async () => {
-    try {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) { currentUser = session.user; }
-    } catch (e) {}
-    if (SUPABASE_SERVICE_ROLE_KEY) {
-        showMainApp();
-    }
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { currentUser = session.user; showMainApp(); }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
-    safeRemoveItem('SUPABASE_SERVICE_ROLE_KEY');
     currentUser = null;
-    window.location.href = 'login.html';
+    window.location.reload(); // no session → the inline login screen shows again
 });
 
 function showMainApp() {
@@ -201,7 +116,7 @@ function showMainApp() {
     mainApp.style.display = 'flex';
     const name = currentUser?.email?.split('@')[0] || 'المدير';
     document.getElementById('welcomeUser').textContent = `مرحباً، ${name}`;
-    updateBotSwitcherUI(); // V8.0: Initialize Bot Switcher
+    // نحمل الإعدادات أولاً عشان settingsData يكون جاهز قبل الجداول
     loadAllData();
     loadSettings();
     initCodeGenerator();
@@ -233,19 +148,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ══════════════════════════════════════════════════
 async function loadDashboardData() {
     try {
-        let devQuery = sb.from('devices').select('*');
-        let licQuery = sb.from('licenses').select('status,device_id');
-        let setQuery = sb.from('app_settings').select('*');
-
-        if (BotContext.active === 'weplay') {
-            devQuery = devQuery.eq('bot_type', 'weplay');
-            licQuery = licQuery.eq('bot_type', 'weplay');
-            setQuery = setQuery.eq('bot_type', 'weplay');
-        }
-
-        const { data: devices } = await devQuery;
-        const { data: licenses } = await licQuery;
-        const { data: settings } = await setQuery.maybeSingle();
+        const { data: devices } = await sb.from('devices').select('*');
+        const { data: licenses } = await sb.from('licenses').select('status');
+        const { data: settings } = await sb.from('app_settings').select('*').eq('id', 1).maybeSingle();
         settingsData = settings || null;
 
         const now = new Date();
@@ -273,16 +178,7 @@ async function loadDashboardData() {
             banner.innerHTML = '<i class="fas fa-check-circle"></i><span>حالة النظام: متصل ويعمل لجميع المستخدمين المشتركين (وضع الأكواد).</span>';
             banner.className = 'status-banner online';
         }
-    } catch (err) {
-        console.error("Error loading data:", err);
-        if (err.status === 401 || (err.message && err.message.includes('401'))) {
-            safeRemoveItem('SUPABASE_SERVICE_ROLE_KEY');
-            alert("مفتاح الخدمة انتهى أو غير صالح للسيرفر الجديد! يرجى إعادة تسجيل الدخول.");
-            window.location.href = 'login.html';
-            return;
-        }
-        showToast('خطأ في تحميل بيانات الرئيسية', 'error');
-    }
+    } catch (err) { showToast('خطأ في تحميل بيانات الرئيسية', 'error'); }
 }
 
 // Header Global Refresh
@@ -296,11 +192,7 @@ document.getElementById('refreshAllBtn')?.addEventListener('click', async () => 
 // ══════════════════════════════════════════════════
 async function loadUsersData() {
     try {
-        let query = sb.from('devices').select('*').order('created_at', { ascending:false });
-        if (BotContext.active === 'weplay') {
-            query = query.eq('bot_type', 'weplay');
-        }
-        const { data, error } = await query;
+        const { data, error } = await sb.from('devices').select('*').order('created_at', { ascending:false });
         if (error) throw error;
         usersData = data || [];
         applyUserFilter();
@@ -708,11 +600,7 @@ document.getElementById('userDetailsModal')?.addEventListener('click', e => {
 
 async function loadStatsData() {
     try {
-        let query = sb.from('devices').select('*').order('total_runs', { ascending:false });
-        if (BotContext.active === 'weplay') {
-            query = query.eq('bot_type', 'weplay');
-        }
-        const { data } = await query;
+        const { data } = await sb.from('devices').select('*').order('total_runs', { ascending:false });
         const tbody = document.getElementById('statsTableBody');
         if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">لا توجد بيانات</td></tr>'; return; }
         tbody.innerHTML = data.map(d => {
@@ -745,30 +633,10 @@ window.unblockUser = async (deviceId) => {
     await loadUsersData(); loadDashboardData();
 };
 window.deleteUser = async (deviceId) => {
-    showLoading(true);
-    try {
-        // 1. Unbind any license bound to this device first to prevent 409 Conflict
-        let licQuery = sb.from('licenses').update({ device_id: null, expires_at: null, status: 'active' }).eq('device_id', deviceId);
-        if (BotContext.active === 'weplay') {
-            licQuery = licQuery.eq('bot_type', 'weplay');
-        }
-        await licQuery;
-
-        // 2. Delete device row
-        let devQuery = sb.from('devices').delete().eq('device_id', deviceId);
-        if (BotContext.active === 'weplay') {
-            devQuery = devQuery.eq('bot_type', 'weplay');
-        }
-        const { error } = await devQuery;
-        if (error) throw error;
-
-        showToast('✅ تم حذف المستخدم نهائياً', 'success');
-        await Promise.all([loadCodesData(), loadUsersData(), loadDashboardData()]);
-        loadExpiryTable();
-    } catch(err) {
-        showToast('❌ خطأ في الحذف: ' + err.message, 'error');
-    }
-    showLoading(false);
+    if (!confirm('حذف نهائي؟ لا يمكن التراجع!')) return;
+    await sb.from('devices').delete().eq('device_id', deviceId);
+    showToast('تم الحذف', 'success');
+    await loadUsersData(); loadDashboardData();
 };
 
 // ══════════════════════════════════════════════════
@@ -976,8 +844,11 @@ async function checkScreenshotStatus() {
                     // Image is ready!
                     document.getElementById('screenshotLoader').style.display = 'none';
                     const img = document.getElementById('screenshotImage');
-                    // Bypass browser cache for new screenshots
-                    img.src = data.screenshot_url + '?t=' + new Date().getTime();
+                    // Private bucket: screenshot_url now holds a storage PATH, not a
+                    // public URL. Fetch a short-lived signed URL (admins only, via RLS).
+                    const { data: signed } = await sb.storage
+                        .from('screenshots').createSignedUrl(data.screenshot_url, 300);
+                    img.src = (signed?.signedUrl || '') + '#t=' + Date.now();
                     img.style.display = 'block';
                     document.getElementById('screenshotStatus').textContent = '✅ تم استلام الصورة بنجاح من الهاتف!';
                     clearInterval(screenshotInterval);
@@ -1259,10 +1130,10 @@ async function revokeDeviceLicense(deviceId) {
             showLoading(false);
             return;
         }
-        // فك ارتباط الكود بالجهاز بالـ license_key مش device_id عشان بنعمله null
+        // فك ارتباط الكود بالجهاز بالـ id مش device_id عشان بنعمله null
         const { error } = await sb.from('licenses')
             .update({ device_id: null, expires_at: null, status: 'active' })
-            .eq('license_key', lic.license_key);
+            .eq('id', lic.id);
 
         if (error) throw error;
 
@@ -1326,11 +1197,7 @@ window.confirmRenew = async () => {
 // ══════════════════════════════════════════════════
 async function loadCodesData() {
     try {
-        let query = sb.from('licenses').select('*').order('created_at', { ascending:false });
-        if (BotContext.active === 'weplay') {
-            query = query.eq('bot_type', 'weplay');
-        }
-        const { data, error } = await query;
+        const { data, error } = await sb.from('licenses').select('*').order('created_at', { ascending:false });
         if (error) throw error;
         codesData = data || [];
         applyCodesFilter();
@@ -1408,10 +1275,10 @@ function displayCodes(codes) {
             <td style="font-size:12px;color:var(--muted);">${c.expires_at ? formatDate(c.expires_at) : '♾️'}</td>
             <td>
                 ${c.status === 'active'
-                    ? `<button class="table-btn block" onclick="suspendCode('${c.license_key}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
-                    : `<button class="table-btn unblock" onclick="activateCode('${c.license_key}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
+                    ? `<button class="table-btn block" onclick="suspendCode('${c.id}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
+                    : `<button class="table-btn unblock" onclick="activateCode('${c.id}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
                 }
-                <button class="table-btn delete" onclick="deleteCode('${c.license_key}')" title="حذف"><i class="fas fa-trash"></i></button>
+                <button class="table-btn delete" onclick="deleteCode('${c.id}')" title="حذف"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -1425,24 +1292,21 @@ document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
     showToast(`✅ تم نسخ ${codesData.filter(c=>!c.device_id).length} كود`, 'success');
 });
 
-window.suspendCode = async (key) => {
-    const { error } = await sb.from('licenses').update({ status:'suspended' }).eq('license_key', key);
-    if (error) { showToast('❌ خطأ: ' + error.message, 'error'); return; }
+window.suspendCode = async (id) => {
+    await sb.from('licenses').update({ status:'suspended' }).eq('id', id);
     showToast('تم إيقاف الكود مؤقتاً', 'info');
     loadCodesData();
 };
-window.activateCode = async (key) => {
-    const { error } = await sb.from('licenses').update({ status:'active' }).eq('license_key', key);
-    if (error) { showToast('❌ خطأ: ' + error.message, 'error'); return; }
+window.activateCode = async (id) => {
+    await sb.from('licenses').update({ status:'active' }).eq('id', id);
     showToast('✅ تم إعادة تفعيل الكود', 'success');
     loadCodesData();
 };
-window.deleteCode = async (key) => {
+window.deleteCode = async (id) => {
     if (!confirm('حذف الكود نهائياً؟')) return;
-    const { error } = await sb.from('licenses').delete().eq('license_key', key);
-    if (error) { showToast('❌ خطأ في الحذف: ' + error.message, 'error'); return; }
-    showToast('✅ تم حذف الكود بنجاح', 'success');
-    loadCodesData(); loadDashboardData();
+    await sb.from('licenses').delete().eq('id', id);
+    showToast('تم حذف الكود', 'success');
+    loadCodesData();
 };
 
 // ══════════════════════════════════════════════════
@@ -1563,7 +1427,7 @@ async function generateCodes() {
                 const ms = (generatorState.days || 30) * 86400000;
                 expiresAt = new Date(Date.now() + ms).toISOString();
             }
-            rows.push({ license_key: key, expires_at: expiresAt, status: 'active', bot_type: BotContext.active });
+            rows.push({ license_key: key, expires_at: expiresAt, status: 'active' });
         }
         const { error } = await sb.from('licenses').insert(rows);
         if (error) throw error;
@@ -1579,8 +1443,7 @@ async function generateBulkCodes(count, days) {
         const rows = Array.from({length:count}, () => ({
             license_key: rndNum(12),
             expires_at: new Date(Date.now() + days*86400000).toISOString(),
-            status: 'active',
-            bot_type: BotContext.active
+            status: 'active'
         }));
         await sb.from('licenses').insert(rows);
         showToast(`✅ تم توليد ${count} كود (${days} يوم)`, 'success');
@@ -1589,11 +1452,16 @@ async function generateBulkCodes(count, days) {
     showLoading(false);
 }
 
+// SECURITY: crypto-strong keys (was Math.random over 10 digits ≈ predictable &
+// brute-forceable). Uses a 30-char unambiguous alphabet; 12 chars ≈ 60 bits.
+// Raise `length` for more entropy. For maximum safety generate keys via the
+// `admin` Edge Function (adminCall('generate_license', ...)) instead.
 function rndNum(length = 12) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const bytes = new Uint8Array(length);
+    (window.crypto || window.msCrypto).getRandomValues(bytes);
     let result = '';
-    for (let i = 0; i < length; i++) {
-        result += Math.floor(Math.random() * 10).toString();
-    }
+    for (let i = 0; i < length; i++) result += alphabet[bytes[i] % alphabet.length];
     return result;
 }
 
@@ -1602,18 +1470,13 @@ function rndNum(length = 12) {
 // ══════════════════════════════════════════════════
 async function loadSettings() {
     try {
-        let query = sb.from('app_settings').select('*');
-        if (BotContext.active === 'weplay') {
-            query = query.eq('bot_type', 'weplay');
-        } else {
-            query = query.eq('id', 1);
-        }
-        const { data } = await query.maybeSingle();
+        const { data } = await sb.from('app_settings').select('*').eq('id',1).maybeSingle();
         if (data) {
             settingsData = data;
             document.getElementById('botMode').value = data.bot_mode || 'subscription';
             document.getElementById('globalMessage').value = data.global_message || '';
             document.getElementById('trialHours').value = data.trial_hours || 24;
+            // إظهار/إخفاء حقل ساعات التجربة
             const trialItem = document.getElementById('trialHoursItem');
             if (trialItem) trialItem.style.display = data.bot_mode === 'trial' ? 'block' : 'none';
         }
@@ -1633,20 +1496,14 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     
     showLoading(true);
     try {
-        let error;
-        if (BotContext.active === 'weplay') {
-            // V2: update the row where bot_type = 'weplay'
-            const { error: e } = await sb.from('app_settings')
-                .update({ is_shutdown, bot_mode, global_message })
-                .eq('bot_type', 'weplay');
-            error = e;
-        } else {
-            // V1 (legacy): update by id = 1
-            const { error: e } = await sb.from('app_settings')
-                .update({ is_shutdown, bot_mode, global_message })
-                .eq('id', 1);
-            error = e;
-        }
+        // We do not upsert trial_hours because the column does not exist in the app_settings database table
+        const { error } = await sb.from('app_settings').upsert({ 
+            id: 1, 
+            is_shutdown, 
+            bot_mode, 
+            global_message 
+        });
+        
         if (error) throw error;
         
         showToast('✅ تم حفظ الإعدادات بنجاح', 'success');
@@ -1657,31 +1514,20 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     }
     showLoading(false);
 });
-
 document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', async () => {
-    if (!confirm('حذف جميع الأكواد غير المستخدمة للبوت الحالي؟')) return;
-    let query = sb.from('licenses').delete().is('device_id', null);
-    if (BotContext.active === 'weplay') {
-        query = query.eq('bot_type', 'weplay');
-    }
-    await query;
+    if (!confirm('حذف جميع الأكواد غير المستخدمة؟')) return;
+    await sb.from('licenses').delete().is('device_id', null);
     showToast('✅ تم حذف الأكواد غير المستخدمة', 'success');
     loadCodesData();
 });
 document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async () => {
-    if (!confirm('هل أنت متأكد من تنظيف وحذف جميع أجهزة المحاكاة واختبارات جوجل للبوت الحالي؟ لن يتم لمس أي جهاز مرتبط بكود تفعيل.')) return;
+    if (!confirm('هل أنت متأكد من تنظيف وحذف جميع أجهزة المحاكاة واختبارات جوجل من قاعدة البيانات؟ لن يتم لمس أي جهاز مرتبط بكود تفعيل.')) return;
     showLoading(true);
     try {
-        let devQuery = sb.from('devices').select('*');
-        let licQuery = sb.from('licenses').select('device_id');
-        if (BotContext.active === 'weplay') {
-            devQuery = devQuery.eq('bot_type', 'weplay');
-            licQuery = licQuery.eq('bot_type', 'weplay');
-        }
-        const { data: devices, error: devError } = await devQuery;
+        const { data: devices, error: devError } = await sb.from('devices').select('*');
         if (devError) throw devError;
 
-        const { data: licenses, error: licError } = await licQuery;
+        const { data: licenses, error: licError } = await sb.from('licenses').select('device_id');
         if (licError) throw licError;
 
         const licensedDeviceIds = new Set(licenses.map(l => l.device_id).filter(id => id));
@@ -1708,15 +1554,9 @@ document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async ()
 
         const idsToDelete = emulatorsToDelete.map(e => e.device_id);
 
-        let delLicQuery = sb.from('licenses').delete().in('device_id', idsToDelete);
-        let delDevQuery = sb.from('devices').delete().in('device_id', idsToDelete);
-        if (BotContext.active === 'weplay') {
-            delLicQuery = delLicQuery.eq('bot_type', 'weplay');
-            delDevQuery = delDevQuery.eq('bot_type', 'weplay');
-        }
+        await sb.from('licenses').delete().in('device_id', idsToDelete);
 
-        await delLicQuery;
-        const { error: deleteError } = await delDevQuery;
+        const { error: deleteError } = await sb.from('devices').delete().in('device_id', idsToDelete);
         if (deleteError) throw deleteError;
 
         showToast(`✅ تم تنظيف ${emulatorsToDelete.length} جهاز محاكاة بنجاح!`, 'success');
@@ -1728,12 +1568,8 @@ document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async ()
     showLoading(false);
 });
 document.getElementById('resetAllUsersBtn')?.addEventListener('click', async () => {
-    if (!confirm('إعادة تعيين جميع المستخدمين للبوت الحالي؟ لا يمكن التراجع!')) return;
-    let query = sb.from('devices').update({ total_runs:0, total_minutes:0 }).neq('device_id','');
-    if (BotContext.active === 'weplay') {
-        query = query.eq('bot_type', 'weplay');
-    }
-    await query;
+    if (!confirm('إعادة تعيين جميع المستخدمين؟ لا يمكن التراجع!')) return;
+    await sb.from('devices').update({ total_runs:0, total_minutes:0 }).neq('device_id','');
     showToast('✅ تم إعادة تعيين الإحصائيات', 'success');
     loadUsersData();
 });

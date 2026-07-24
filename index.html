@@ -65,40 +65,8 @@
                 <path d="M22 38 L16 48 Q22 44 28 42Z" fill="#00c8d4" opacity="0.8"/>
             </svg>
             <span>SHARK ADMIN</span>
-            <!-- V8.0: Active Bot Badge -->
-            <span id="headerBotBadge" class="header-bot-badge">🦈 SHARK V2 (الجديد)</span>
         </div>
         <div class="header-right">
-            <!-- V8.0: BOT SWITCHER WIDGET -->
-            <div id="botSwitcherWrapper" class="bot-switcher-wrapper">
-                <button class="bot-switcher-btn" onclick="toggleBotDropdown()" title="تغيير البوت">
-                    <span id="botSwitcherIndicator" class="bot-indicator"></span>
-                    <div class="bot-switcher-text">
-                        <span id="activeBotLabel" class="bot-switcher-label">🦈 SHARK V2 (الجديد)</span>
-                        <span id="activeBotDesc" class="bot-switcher-desc">البوت الجديد</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="font-size:10px;color:var(--muted);"></i>
-                </button>
-                <div id="botSwitcherDropdown" class="bot-switcher-dropdown" style="display:none;">
-                    <div class="bot-dropdown-title">تحديد البوت النشط</div>
-                    <button class="bot-option-btn" data-bot-id="weplay" onclick="BotContext.switchTo('weplay')">
-                        <span class="bot-option-dot" style="background:#00f3ff;"></span>
-                        <div>
-                            <div class="bot-option-name">🦈 SHARK V2 (الجديد)</div>
-                            <div class="bot-option-sub">السيرفر الجديد — محمي بالكامل</div>
-                        </div>
-                        <i class="fas fa-check bot-option-check"></i>
-                    </button>
-                    <button class="bot-option-btn" data-bot-id="weplay_legacy" onclick="BotContext.switchTo('weplay_legacy')">
-                        <span class="bot-option-dot" style="background:#f59e0b;"></span>
-                        <div>
-                            <div class="bot-option-name">🔶 SHARK V1 (القديم)</div>
-                            <div class="bot-option-sub">البوت القديم — الاشتراكات السابقة</div>
-                        </div>
-                        <i class="fas fa-check bot-option-check"></i>
-                    </button>
-                </div>
-            </div>
             <div class="header-online"><span class="online-pulse"></span> System Online</div>
             <span id="welcomeUser" class="header-user"></span>
             <button id="refreshAllBtn" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" title="تحديث البيانات"><i class="fas fa-sync-alt"></i> تحديث</button>
@@ -614,6 +582,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
