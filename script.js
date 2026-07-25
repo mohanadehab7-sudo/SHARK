@@ -1496,12 +1496,16 @@ document.getElementById('saveSettingsBtn')?.addEventListener('click', async () =
     
     showLoading(true);
     try {
-        // We do not upsert trial_hours because the column does not exist in the app_settings database table
-        const { error } = await sb.from('app_settings').upsert({ 
-            id: 1, 
-            is_shutdown, 
-            bot_mode, 
-            global_message 
+        // Admin-controlled trial length (hours). Clamp to a sane 1–168h range.
+        let trial_hours = parseInt(document.getElementById('trialHours').value, 10);
+        if (!Number.isFinite(trial_hours) || trial_hours < 1) trial_hours = 24;
+        if (trial_hours > 168) trial_hours = 168;
+        const { error } = await sb.from('app_settings').upsert({
+            id: 1,
+            is_shutdown,
+            bot_mode,
+            global_message,
+            trial_hours
         });
         
         if (error) throw error;
