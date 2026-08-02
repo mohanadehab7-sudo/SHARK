@@ -213,7 +213,7 @@ function isUserSubActive(u) {
     const lic = codesData.find(c => c.device_id === u.device_id && c.status !== 'suspended');
     const mode = settingsData?.bot_mode || 'subscription';
     if (lic) {
-        if (!lic.expires_at) return true; // Lifetime
+        if (!lic.expires_at || lic.duration_days >= 36500) return true; // Lifetime or not yet activated (if somehow checked before activation)
         return new Date(lic.expires_at) > new Date();
     }
     if (mode === 'free') return true;
@@ -1133,7 +1133,7 @@ async function revokeDeviceLicense(deviceId) {
         // فك ارتباط الكود بالجهاز بالـ id مش device_id عشان بنعمله null
         const { error } = await sb.from('licenses')
             .update({ device_id: null, expires_at: null, status: 'active' })
-            .eq('id', lic.id);
+            .eq('license_key', lic.license_key);
 
         if (error) throw error;
 
@@ -1216,7 +1216,7 @@ function applyCodesFilter() {
         const diffHours = (expires - created) / 3600000;
         return diffHours <= 6; // أقل من 6 ساعات = trial
     });
-    else if (filter === 'lifetime') filtered = codesData.filter(c => !c.expires_at);
+    else if (filter === 'lifetime') filtered = codesData.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
     document.getElementById('codesCount').textContent = `(${filtered.length})`;
     displayCodes(filtered);
 }
@@ -1226,9 +1226,10 @@ function displayCodes(codes) {
     if (!codes.length) { tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">لا توجد أكواد</td></tr>'; return; }
     tbody.innerHTML = codes.map((c, i) => {
         const isUsed     = !!c.device_id;
-        const isLifetime = !c.expires_at;
-        // كود trial = الفرق بين الإنشاء والانتهاء أقل من 6 ساعات
-        const isTrial    = c.expires_at && ((new Date(c.expires_at) - new Date(c.created_at)) / 3600000) <= 6;
+        const isLifetime = c.duration_days >= 36500 || (isUsed && (!c.expires_at || c.expires_at.startsWith('2099-01-01')));
+        
+        // كود trial = 3 ساعات
+        const isTrial    = c.duration_days && c.duration_days < 1;
         const statusBadge = c.status === 'suspended'
             ? '<span class="badge badge-banned">موقوف</span>'
             : isUsed
@@ -1241,27 +1242,22 @@ function displayCodes(codes) {
             durationText = '<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;">⚡ 3 ساعات</span>';
         } else if (isLifetime) {
             durationText = '<span style="background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;">♾️ مدى الحياة</span>';
-        } else if (c.duration_label) {
-            // عنده label محفوظ — استخدمه مباشرة
-            durationText = `<span style="font-size:13px;color:var(--text);font-weight:600;">${c.duration_label}</span>`;
-        } else if (c.expires_at) {
-            // احسب المدة من تاريخ الإنشاء وتاريخ الانتهاء
-            const created  = new Date(c.created_at);
-            const expires  = new Date(c.expires_at);
-            const diffMs   = expires - created;
-            const diffHours = diffMs / 3600000;
-            const diffDays  = diffMs / 86400000;
+        } else if (c.duration_days) {
             let label;
-            if (diffHours <= 6)        label = '⚡ 3 ساعات';
-            else if (diffHours <= 25)  label = '🕐 24 ساعة';
-            else if (Math.round(diffDays) === 7)  label = '📅 أسبوع';
-            else if (Math.round(diffDays) === 30) label = '📆 شهر';
-            else if (Math.round(diffDays) === 90) label = '📆 3 شهور';
-            else                       label = `📆 ${Math.round(diffDays)} يوم`;
+            if (c.duration_days === 7)  label = '📅 أسبوع';
+            else if (c.duration_days === 30) label = '📆 شهر';
+            else if (c.duration_days === 90) label = '📆 3 شهور';
+            else                       label = `📆 ${Math.round(c.duration_days)} يوم`;
             durationText = `<span style="font-size:13px;color:var(--text);font-weight:600;">${label}</span>`;
         } else {
             durationText = '<span style="color:var(--muted);">—</span>';
         }
+
+        let expiryText = '';
+        if (isLifetime && isUsed) expiryText = '♾️ مدى الحياة';
+        else if (!isUsed && (!c.expires_at || c.expires_at.startsWith('2099-01-01'))) expiryText = 'لم يُفعّل بعد';
+        else if (c.expires_at) expiryText = formatDate(c.expires_at);
+        else expiryText = '—';
 
         return `<tr>
             <td style="color:var(--muted);">${i+1}</td>
@@ -1272,13 +1268,13 @@ function displayCodes(codes) {
             <td>${durationText}</td>
             <td>${statusBadge}</td>
             <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${c.device_id ? c.device_id.substring(0,12)+'...' : '-'}</td>
-            <td style="font-size:12px;color:var(--muted);">${c.expires_at ? formatDate(c.expires_at) : '♾️'}</td>
+            <td style="font-size:12px;color:var(--muted);">${expiryText}</td>
             <td>
                 ${c.status === 'active'
-                    ? `<button class="table-btn block" onclick="suspendCode('${c.id}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
-                    : `<button class="table-btn unblock" onclick="activateCode('${c.id}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
+                    ? `<button class="table-btn block" onclick="suspendCode('${c.license_key}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
+                    : `<button class="table-btn unblock" onclick="activateCode('${c.license_key}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
                 }
-                <button class="table-btn delete" onclick="deleteCode('${c.id}')" title="حذف"><i class="fas fa-trash"></i></button>
+                <button class="table-btn delete" onclick="deleteCode('${c.license_key}')" title="حذف"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -1293,18 +1289,18 @@ document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
 });
 
 window.suspendCode = async (id) => {
-    await sb.from('licenses').update({ status:'suspended' }).eq('id', id);
+    await sb.from('licenses').update({ status:'suspended' }).eq('license_key', id);
     showToast('تم إيقاف الكود مؤقتاً', 'info');
     loadCodesData();
 };
 window.activateCode = async (id) => {
-    await sb.from('licenses').update({ status:'active' }).eq('id', id);
+    await sb.from('licenses').update({ status:'active' }).eq('license_key', id);
     showToast('✅ تم إعادة تفعيل الكود', 'success');
     loadCodesData();
 };
 window.deleteCode = async (id) => {
     if (!confirm('حذف الكود نهائياً؟')) return;
-    await sb.from('licenses').delete().eq('id', id);
+    await sb.from('licenses').delete().eq('license_key', id);
     showToast('تم حذف الكود', 'success');
     loadCodesData();
 };
@@ -1414,20 +1410,25 @@ async function generateCodes() {
         const rows = [];
         for (let i = 0; i < count; i++) {
             const key = rndNum(12);
-            let expiresAt;
+            let expiresAt = '2099-01-01T00:00:00.000Z'; // Magic date to bypass server validations
+            let durDays = generatorState.days || 30;
+            
             if (generatorState.type === 'lifetime') {
-                expiresAt = null;
+                expiresAt = '2099-01-01T00:00:00.000Z';
+                durDays = 36500; // 100 years
             } else if (generatorState.type === 'date' && generatorState.expiryDate) {
+                // Fixed expiry date, code expires regardless of when it's activated
                 expiresAt = new Date(generatorState.expiryDate + 'T23:59:59').toISOString();
+                // durDays is not heavily relied upon here, but we can set it to null or calculate
+                durDays = null;
             } else if (generatorState.customHours) {
-                // مدة بالساعات
-                expiresAt = new Date(Date.now() + generatorState.customHours * 3600000).toISOString();
+                // Duration by hours
+                durDays = generatorState.customHours / 24.0;
             } else {
-                // مدة بالأيام (أو preset)
-                const ms = (generatorState.days || 30) * 86400000;
-                expiresAt = new Date(Date.now() + ms).toISOString();
+                // Duration by days
+                durDays = generatorState.days || 30;
             }
-            rows.push({ license_key: key, expires_at: expiresAt, status: 'active' });
+            rows.push({ license_key: key, expires_at: expiresAt, duration_days: durDays, status: 'active' });
         }
         const { error } = await sb.from('licenses').insert(rows);
         if (error) throw error;
@@ -1442,7 +1443,8 @@ async function generateBulkCodes(count, days) {
     try {
         const rows = Array.from({length:count}, () => ({
             license_key: rndNum(12),
-            expires_at: new Date(Date.now() + days*86400000).toISOString(),
+            expires_at: '2099-01-01T00:00:00.000Z',
+            duration_days: days,
             status: 'active'
         }));
         await sb.from('licenses').insert(rows);
