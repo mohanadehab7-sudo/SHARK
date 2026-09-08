@@ -1,0 +1,22 @@
+{
+  "name": "Shark Bot — Admin Command Center",
+  "short_name": "Shark Admin",
+  "description": "Shark Bot Mobile & Web Management Console",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0f18",
+  "theme_color": "#0a0f18",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3204/3204924.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3204/3204924.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -2,12 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0f18">
     <meta name="description" content="Shark Bot Admin Dashboard - Professional Command & Control Center">
     <title>Shark Bot — Admin Command Center</title>
+
+    <!-- Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3204/3204924.png">
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/tokens.css">
@@ -45,6 +50,9 @@
             <div class="login-input-group">
                 <i class="fas fa-lock" aria-hidden="true"></i>
                 <input type="password" id="loginPassword" placeholder="كلمة المرور" required autocomplete="current-password" aria-label="كلمة المرور">
+                <button type="button" id="togglePasswordBtn" class="password-toggle-btn" aria-label="إظهار كلمة المرور">
+                    <i class="far fa-eye" id="togglePasswordIcon" aria-hidden="true"></i>
+                </button>
             </div>
             <div id="loginError" class="login-error" style="display:none;" role="alert"></div>
             <button type="submit" class="login-btn" id="loginSubmitBtn">
@@ -83,7 +91,7 @@
         </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- Navigation Tabs (Desktop Horizontal / Mobile Bottom Navigation Bar) -->
     <nav class="nav-tabs" role="tablist" aria-label="أقسام لوحة التحكم">
         <button class="tab-btn active" data-tab="dashboard" role="tab" aria-selected="true" id="tab-dashboard">
             <i class="fas fa-chart-bar" aria-hidden="true"></i><span>الرئيسية</span>
@@ -386,6 +394,7 @@
 <!-- Renew Modal -->
 <div id="renewModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="renewModalTitle">
     <div class="modal-box" style="max-width:460px;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <h3 id="renewModalTitle"><i class="fas fa-sync-alt" aria-hidden="true"></i> تجديد الاشتراك</h3>
         <p id="renewUserName" class="modal-sub">اختر المدة الجديدة</p>
 
@@ -433,6 +442,7 @@
 <!-- Message Modal -->
 <div id="msgModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="msgModalTitle">
     <div class="modal-box">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <h3 id="msgModalTitle"><i class="fas fa-comment-dots" aria-hidden="true"></i> رسالة مخصصة للمستخدم</h3>
         <p class="modal-sub">ستظهر هذه الرسالة فوراً داخل تطبيق العميل</p>
         <textarea id="msgText" class="modal-textarea" placeholder="اكتب نص الرسالة هنا..." aria-label="نص الرسالة"></textarea>
@@ -446,6 +456,7 @@
 <!-- Screenshot Modal -->
 <div id="screenshotModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="screenshotModalTitle">
     <div class="modal-box" style="max-width: 500px;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <h3 id="screenshotModalTitle"><i class="fas fa-camera" aria-hidden="true"></i> لقطة شاشة الهاتف</h3>
         <p id="screenshotStatus" class="modal-sub" role="status">جاري طلب الصورة من هاتف العميل...</p>
         <div class="screenshot-container" style="text-align: center; margin: 15px 0;">
@@ -465,6 +476,7 @@
 <!-- Gallery Modal -->
 <div id="galleryModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="galleryModalTitle">
     <div class="modal-box" style="max-width: 800px; width: 95%;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <h3 id="galleryModalTitle"><i class="fas fa-images" aria-hidden="true"></i> أرشيف لقطات الشاشة</h3>
         <p id="galleryStatus" class="modal-sub" role="status">جاري تحميل الصور...</p>
         <div id="galleryContainer" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 15px; max-height: 55vh; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
@@ -481,6 +493,7 @@
 <!-- Actions Card Modal -->
 <div id="actionsModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="actionsPhoneName">
     <div class="modal-box user-details-card" style="max-width:400px;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <div class="details-card-header">
             <div class="details-phone-icon">
                 <i class="fas fa-mobile-alt" aria-hidden="true"></i>
@@ -548,6 +561,7 @@
 <!-- User Details Card Modal -->
 <div id="userDetailsModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="detailsPhoneName">
     <div class="modal-box user-details-card" style="max-width:480px;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
         <div class="details-card-header">
             <div class="details-phone-icon">
                 <i class="fas fa-mobile-alt" aria-hidden="true"></i>
