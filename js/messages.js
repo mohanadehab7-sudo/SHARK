@@ -1,0 +1,82 @@
+/**
+ * 🦈 SHARK ADMIN DASHBOARD — IN-APP MESSAGING
+ * Allows sending instant push/in-app notices to individual devices or all filtered users.
+ */
+
+window.SHARK = window.SHARK || {};
+
+let pendingMsgDeviceId = null;
+
+function openMsgModal(deviceId) {
+    pendingMsgDeviceId = deviceId;
+    window.SHARK.state.pendingMsgDeviceId = deviceId;
+    const input = document.getElementById('msgText');
+    if (input) input.value = '';
+    const modal = document.getElementById('msgModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeMsgModal() {
+    const modal = document.getElementById('msgModal');
+    if (modal) modal.style.display = 'none';
+    pendingMsgDeviceId = null;
+    window.SHARK.state.pendingMsgDeviceId = null;
+}
+
+async function confirmSendMessage() {
+    const msgInput = document.getElementById('msgText');
+    const msg = msgInput?.value.trim();
+    if (!msg || !pendingMsgDeviceId) {
+        showToast('يرجى كتابة نص الرسالة أولاً', 'warning');
+        return;
+    }
+
+    showLoading(true);
+    try {
+        if (pendingMsgDeviceId === '__BULK__') {
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            const ids = [...rows].map(row => {
+                const btn = row.querySelector('[onclick^="openActionsCard"]');
+                return btn?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            }).filter(Boolean);
+
+            if (ids.length === 0) {
+                showToast('⚠️ لا يوجد مستخدمون محددون لإرسال الرسالة لهم', 'warning');
+                showLoading(false);
+                return;
+            }
+
+            for (const id of ids) {
+                await window.sb.from('devices').update({ message: msg }).eq('device_id', id);
+            }
+            showToast(`✅ تم إرسال الرسالة لـ ${ids.length} مستخدم`, 'success');
+        } else {
+            const { error } = await window.sb.from('devices').update({ message: msg }).eq('device_id', pendingMsgDeviceId);
+            if (error) throw error;
+            showToast('✅ تم إرسال الرسالة للمستخدم بنجاح', 'success');
+        }
+    } catch (err) {
+        console.error("Message send failed:", err);
+        showToast('❌ خطأ في إرسال الرسالة: ' + (err.message || err), 'error');
+    } finally {
+        showLoading(false);
+        closeMsgModal();
+    }
+}
+
+// Event Listeners
+document.getElementById('msgModal')?.addEventListener('click', e => {
+    if (e.target.id === 'msgModal') closeMsgModal();
+});
+document.getElementById('msgAllFilteredBtn')?.addEventListener('click', () => openMsgModal('__BULK__'));
+
+// Global expose
+window.openMsgModal = openMsgModal;
+window.closeMsgModal = closeMsgModal;
+window.confirmSendMessage = confirmSendMessage;
+
+window.SHARK.messages = {
+    openMsgModal,
+    closeMsgModal,
+    confirmSendMessage
+};
