@@ -151,7 +151,7 @@ function displayUsers(users) {
                     if (days === 0) {
                         remainingText = '<span style="color:var(--color-status-warning);font-weight:700;">اليوم</span>';
                     } else {
-                        remainingText = `<span>متبقي ${days} يوم</span>`;
+                        remainingText = `<span>${days} يوم</span>`;
                     }
                 }
             }

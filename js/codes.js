@@ -54,14 +54,20 @@ function applyCodesFilter() {
 
 function displayCodes(codes) {
     const tbody = document.getElementById('codesTableBody');
-    if (!tbody) return;
+    const cardsContainer = document.getElementById('codesCardsContainer');
+    if (!tbody && !cardsContainer) return;
 
     if (!codes.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="loading-cell"><i class="ri-key-2-line"></i> لا توجد أكواد</td></tr>';
+        const emptyHtml = '<div class="loading-cell" style="padding:32px 16px;"><i class="ri-key-2-line"></i> لا توجد أكواد</div>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="loading-cell"><i class="ri-key-2-line"></i> لا توجد أكواد</td></tr>';
+        if (cardsContainer) cardsContainer.innerHTML = emptyHtml;
         return;
     }
 
-    tbody.innerHTML = codes.map((c, i) => {
+    const rowsHtml = [];
+    const cardsHtml = [];
+
+    codes.forEach((c, i) => {
         const isUsed = !!c.device_id;
         const isLifetime = c.duration_days >= 36500 || (isUsed && (!c.expires_at || c.expires_at.startsWith('2099-01-01')));
         const isTrial = c.duration_days && c.duration_days < 1;
@@ -91,7 +97,8 @@ function displayCodes(codes) {
 
         const safeKey = escapeHtml(c.license_key);
 
-        return `<tr>
+        // Desktop Table Row (5 columns)
+        rowsHtml.push(`<tr>
             <td style="text-align:center;color:var(--color-text-muted);">${i + 1}</td>
             <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:12px;font-weight:700;">
                 <div style="display:inline-flex;align-items:center;gap:4px;">
@@ -112,8 +119,44 @@ function displayCodes(codes) {
                     <button class="table-btn delete" onclick="deleteCode('${safeKey}')" title="حذف الكود"><i class="ri-delete-bin-line"></i></button>
                 </div>
             </td>
-        </tr>`;
-    }).join('');
+        </tr>`);
+
+        // Mobile Code Card (Zero horizontal scroll, 100% visible, touch-friendly)
+        cardsHtml.push(`
+            <div class="code-mobile-card">
+                <div class="code-card-header">
+                    <div class="code-key-pill" onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="اضغط للنسخ">
+                        <i class="ri-key-2-line" style="color:var(--color-primary);"></i>
+                        <span class="code-value">${safeKey}</span>
+                        <i class="ri-file-copy-line copy-hint"></i>
+                    </div>
+                    ${statusBadge}
+                </div>
+                <div class="code-card-footer">
+                    <div class="code-duration-info">
+                        <span class="meta-label">المدة:</span>
+                        ${durationText}
+                    </div>
+                    <div class="code-card-actions">
+                        ${c.status === 'active'
+                            ? `<button class="btn-secondary code-action-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت">
+                                <i class="ri-pause-line"></i> إيقاف
+                               </button>`
+                            : `<button class="btn-secondary code-action-btn" onclick="activateCode('${safeKey}')" title="إعادة تفعيل" style="color:#60A5FA; border-color:rgba(59,130,246,0.3);">
+                                <i class="ri-play-line"></i> تفعيل
+                               </button>`
+                        }
+                        <button class="btn-danger code-action-btn delete" onclick="deleteCode('${safeKey}')" title="حذف الكود">
+                            <i class="ri-delete-bin-line"></i> حذف
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+
+    if (tbody) tbody.innerHTML = rowsHtml.join('');
+    if (cardsContainer) cardsContainer.innerHTML = cardsHtml.join('');
 }
 
 async function suspendCode(key) {

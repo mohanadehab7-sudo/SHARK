@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -161,7 +161,7 @@
         <div id="codes" class="tab-content" role="tabpanel" aria-labelledby="tab-codes" hidden>
             <div class="section-header">
                 <h2><i class="ri-key-2-line" aria-hidden="true"></i> الأكواد <span id="codesCount" class="count-badge"></span></h2>
-                <div class="filters">
+                <div class="filters codes-filters">
                     <button id="openQuickCodeModalBtn" class="btn-primary" onclick="openQuickCodeModal()">
                         <i class="ri-flashlight-line" aria-hidden="true"></i> توليد كود
                     </button>
@@ -177,8 +177,8 @@
                 </div>
             </div>
 
-            <!-- Codes Table (Compact 5 columns, 0 horizontal overflow) -->
-            <div class="table-container">
+            <!-- Codes Table (Compact 5 columns for Desktop) -->
+            <div class="table-container desktop-table-view">
                 <div class="table-scroll">
                     <table class="data-table">
                         <thead>
@@ -195,6 +195,11 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Codes Mobile Cards View (Zero horizontal scroll, iPhone optimized) -->
+            <div id="codesCardsContainer" class="codes-mobile-cards-view">
+                <div class="loading-cell"><i class="ri-loader-4-line ri-spin" aria-hidden="true"></i> جاري التحميل...</div>
             </div>
         </div>
 
@@ -463,16 +468,16 @@
 
 <!-- Core Supabase & App Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=10.0"></script>
-<script src="js/api.js?v=10.0"></script>
-<script src="js/ui.js?v=10.0"></script>
-<script src="js/auth.js?v=10.0"></script>
-<script src="js/dashboard.js?v=10.0"></script>
-<script src="js/users.js?v=10.0"></script>
-<script src="js/messages.js?v=10.0"></script>
-<script src="js/renew.js?v=10.0"></script>
-<script src="js/codes.js?v=10.0"></script>
-<script src="js/settings.js?v=10.0"></script>
-<script src="js/app.js?v=10.0"></script>
+<script src="config.js?v=10.1"></script>
+<script src="js/api.js?v=10.1"></script>
+<script src="js/ui.js?v=10.1"></script>
+<script src="js/auth.js?v=10.1"></script>
+<script src="js/dashboard.js?v=10.1"></script>
+<script src="js/users.js?v=10.1"></script>
+<script src="js/messages.js?v=10.1"></script>
+<script src="js/renew.js?v=10.1"></script>
+<script src="js/codes.js?v=10.1"></script>
+<script src="js/settings.js?v=10.1"></script>
+<script src="js/app.js?v=10.1"></script>
 </body>
 </html>

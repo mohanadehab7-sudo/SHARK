@@ -463,20 +463,20 @@
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    flex: 1;
 }
 .user-card-title {
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: var(--color-text-primary);
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
 }
 .user-card-title .device-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 170px;
+    word-break: break-word;
+    line-height: 1.35;
 }
 .user-card-remaining {
     font-size: 12px;
@@ -731,20 +731,26 @@
 }
 .details-title-group h3 {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.35;
 }
 .details-close-btn {
     background: none;
     border: none;
     color: var(--color-text-muted);
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    padding: 4px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-xs);
     line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 .details-close-btn:hover {
     color: var(--color-text-primary);
@@ -936,9 +942,114 @@
 .toast.warning { background: rgba(28, 22, 14, 0.95); border: 1px solid rgba(245, 158, 11, 0.4); color: #FBBF24; }
 .toast.info    { background: rgba(16, 22, 28, 0.95); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; }
 
+/* ── CODES MOBILE CARD VIEW ── */
+.codes-mobile-cards-view {
+    display: none;
+}
+.code-mobile-card {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: var(--transition-fast);
+}
+.code-mobile-card:active {
+    background: var(--color-surface-card-alt);
+    border-color: var(--color-border-medium);
+}
+.code-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.code-key-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    padding: 6px 10px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.code-key-pill .code-value {
+    font-family: var(--font-family-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.5px;
+}
+.code-key-pill .copy-hint {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+.code-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+}
+.code-duration-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+.code-duration-info .meta-label {
+    color: var(--color-text-muted);
+    font-size: 11px;
+}
+.code-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.code-action-btn {
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    border-radius: var(--radius-xs) !important;
+    font-weight: 700 !important;
+    touch-action: manipulation;
+}
+
 @media (max-width: 768px) {
+    .codes-mobile-cards-view {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    /* Codes Toolbar — Balanced 2x2 Grid on Mobile */
+    .codes-filters {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    .codes-filters button,
+    .codes-filters select {
+        width: 100% !important;
+        height: 38px !important;
+        justify-content: center !important;
+        font-size: 12px !important;
+        touch-action: manipulation;
+    }
+
     .toast-container {
-        bottom: calc(var(--bottom-nav-height) + 10px);
+        bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
         width: 92%;
     }
 }
