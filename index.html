@@ -23,7 +23,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-    <link rel="stylesheet" href="style.css?v=9.9">
+    <link rel="stylesheet" href="style.css?v=10.0">
 </head>
 <body>
 
@@ -174,7 +174,6 @@
                     </select>
                     <button id="copyAvailableBtn" class="btn-secondary" aria-label="نسخ الأكواد المتاحة"><i class="ri-file-copy-line" aria-hidden="true"></i> نسخ المتاحة</button>
                     <button id="deleteUnusedCodesBtn" class="btn-danger" onclick="deleteUnusedCodes()" title="حذف الأكواد غير المستخدمة"><i class="ri-delete-bin-line" aria-hidden="true"></i> حذف غير المستخدمة</button>
-                    <button id="refreshCodesBtn" class="btn-secondary" aria-label="تحديث الأكواد"><i class="ri-refresh-line" aria-hidden="true"></i></button>
                 </div>
             </div>
 
@@ -223,14 +222,14 @@
                 <div class="setting-item">
                     <label for="globalMessage">رسالة عامة تظهر للمستخدمين داخل التطبيق:</label>
                     <textarea id="globalMessage" rows="3" placeholder="اكتب رسالة عامة للمستخدمين..."></textarea>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-                        <button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="setGlobalMsgTemplate('ترحيب')">
+                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:8px;">
+                        <button type="button" class="btn-secondary" style="padding:7px 4px; font-size:11px; justify-content:center;" onclick="setGlobalMsgTemplate('ترحيب')">
                             <i class="ri-sparkling-line"></i> تحديث SHARK
                         </button>
-                        <button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="setGlobalMsgTemplate('تجديد')">
+                        <button type="button" class="btn-secondary" style="padding:7px 4px; font-size:11px; justify-content:center;" onclick="setGlobalMsgTemplate('تجديد')">
                             <i class="ri-time-line"></i> تذكير تجديد
                         </button>
-                        <button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="setGlobalMsgTemplate('صيانة')">
+                        <button type="button" class="btn-secondary" style="padding:7px 4px; font-size:11px; justify-content:center;" onclick="setGlobalMsgTemplate('صيانة')">
                             <i class="ri-tools-line"></i> تنبيه صيانة
                         </button>
                     </div>
@@ -333,11 +332,11 @@
 
         <!-- أزرار المدد الجاهزة -->
         <div class="preset-grid" style="margin-bottom:12px;">
-            <button class="preset-btn renew-preset-btn" data-days="1">24 ساعة</button>
-            <button class="preset-btn renew-preset-btn" data-days="7">7 أيام</button>
-            <button class="preset-btn renew-preset-btn active" data-days="30">30 يوم</button>
-            <button class="preset-btn renew-preset-btn" data-days="90">3 شهور</button>
-            <button class="preset-btn renew-preset-btn" data-days="0">مدى الحياة</button>
+            <button class="preset-btn renew-preset-btn" data-days="1"><i class="ri-timer-line"></i> 24 ساعة</button>
+            <button class="preset-btn renew-preset-btn" data-days="7"><i class="ri-calendar-line"></i> 7 أيام</button>
+            <button class="preset-btn renew-preset-btn active" data-days="30"><i class="ri-calendar-check-line"></i> 30 يوم (شهر)</button>
+            <button class="preset-btn renew-preset-btn" data-days="90"><i class="ri-calendar-2-line"></i> 3 شهور</button>
+            <button class="preset-btn renew-preset-btn full-width" data-days="0"><i class="ri-infinity-line"></i> كود دائم (مدى الحياة)</button>
         </div>
 
         <!-- مدة مخصصة -->
@@ -402,18 +401,18 @@
         <!-- Presets Grid -->
         <div class="preset-grid" style="margin-bottom:14px;">
             <button class="preset-btn active" onclick="quickGenerateAndClose(30, 'شهر')">
-                <i class="ri-calendar-line" aria-hidden="true"></i> 30 يوم (شهر)
+                <i class="ri-calendar-check-line" aria-hidden="true"></i> 30 يوم (شهر)
             </button>
             <button class="preset-btn" onclick="quickGenerateAndClose(90, '3 شهور')">
                 <i class="ri-calendar-2-line" aria-hidden="true"></i> 3 شهور
             </button>
-            <button class="preset-btn" onclick="quickGenerateAndClose(365, 'سنة')">
-                <i class="ri-calendar-check-line" aria-hidden="true"></i> سنة كاملة
-            </button>
             <button class="preset-btn" onclick="quickGenerateAndClose(1, '24 ساعة')">
                 <i class="ri-timer-line" aria-hidden="true"></i> 24 ساعة (تجربة)
             </button>
-            <button class="preset-btn" style="grid-column: span 2;" onclick="quickGenerateAndClose(36500, 'مدى الحياة')">
+            <button class="preset-btn" onclick="quickGenerateAndClose(365, 'سنة')">
+                <i class="ri-calendar-line" aria-hidden="true"></i> سنة كاملة
+            </button>
+            <button class="preset-btn full-width" onclick="quickGenerateAndClose(36500, 'مدى الحياة')">
                 <i class="ri-infinity-line" aria-hidden="true"></i> كود دائم (مدى الحياة)
             </button>
         </div>
@@ -464,16 +463,16 @@
 
 <!-- Core Supabase & App Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=9.9"></script>
-<script src="js/api.js?v=9.9"></script>
-<script src="js/ui.js?v=9.9"></script>
-<script src="js/auth.js?v=9.9"></script>
-<script src="js/dashboard.js?v=9.9"></script>
-<script src="js/users.js?v=9.9"></script>
-<script src="js/messages.js?v=9.9"></script>
-<script src="js/renew.js?v=9.9"></script>
-<script src="js/codes.js?v=9.9"></script>
-<script src="js/settings.js?v=9.9"></script>
-<script src="js/app.js?v=9.9"></script>
+<script src="config.js?v=10.0"></script>
+<script src="js/api.js?v=10.0"></script>
+<script src="js/ui.js?v=10.0"></script>
+<script src="js/auth.js?v=10.0"></script>
+<script src="js/dashboard.js?v=10.0"></script>
+<script src="js/users.js?v=10.0"></script>
+<script src="js/messages.js?v=10.0"></script>
+<script src="js/renew.js?v=10.0"></script>
+<script src="js/codes.js?v=10.0"></script>
+<script src="js/settings.js?v=10.0"></script>
+<script src="js/app.js?v=10.0"></script>
 </body>
 </html>

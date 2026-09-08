@@ -498,31 +498,59 @@
 
 /* ── PRESETS & DURATION CONTROLS (SHARED IN MODALS) ── */
 .preset-grid {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
 .preset-btn {
-    padding: 7px 14px;
+    padding: 8px 10px;
+    height: 38px;
     border-radius: var(--radius-xs);
     border: 1px solid var(--color-border-medium);
     background: var(--color-surface-card-alt);
     color: var(--color-text-secondary);
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
     font-family: var(--font-family-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+}
+.preset-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-text-primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+.preset-btn:active {
+    transform: scale(0.97);
 }
 .preset-btn.active {
     border-color: var(--color-primary);
     color: var(--color-primary);
-    background: rgba(59, 130, 246, 0.08);
+    background: rgba(59, 130, 246, 0.12);
+    font-weight: 700;
 }
+.preset-btn.full-width {
+    grid-column: 1 / -1;
+}
+
 .custom-duration-row {
     display: flex;
     gap: 8px;
     align-items: center;
+    width: 100%;
 }
-.custom-input {
+.custom-duration-row .custom-input,
+.custom-duration-row .custom-select {
+    flex: 1;
+    width: 100%;
+}
+.custom-input, .custom-select, .date-input {
     background: var(--color-surface-base);
     border: 1px solid var(--color-border-medium);
     border-radius: var(--radius-xs);
@@ -530,16 +558,7 @@
     color: var(--color-text-primary);
     font-size: 13px;
     font-family: var(--font-family-base);
-    width: 90px;
-}
-.custom-select, .date-input {
-    background: var(--color-surface-base);
-    border: 1px solid var(--color-border-medium);
-    border-radius: var(--radius-xs);
-    padding: 8px 12px;
-    color: var(--color-text-primary);
-    font-size: 13px;
-    font-family: var(--font-family-base);
+    height: 38px;
 }
 
 .code-summary {
@@ -644,8 +663,16 @@
 .modal-actions {
     display: flex;
     gap: 8px;
-    justify-content: flex-end;
-    margin-top: 18px;
+    margin-top: 16px;
+}
+.modal-actions button {
+    flex: 1;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 /* Mobile Bottom Sheet Modal */
