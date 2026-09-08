@@ -37,11 +37,12 @@ function applyCodesFilter() {
     if (filter === 'available') filtered = codesData.filter(c => !c.device_id && c.status === 'active');
     else if (filter === 'used')  filtered = codesData.filter(c => c.device_id);
     else if (filter === 'trial') filtered = codesData.filter(c => {
+        if (c.duration_days && c.duration_days <= 1) return true;
         if (!c.expires_at) return false;
         const created = new Date(c.created_at);
         const expires = new Date(c.expires_at);
         const diffHours = (expires - created) / 3600000;
-        return diffHours <= 6;
+        return diffHours <= 24;
     });
     else if (filter === 'lifetime') filtered = codesData.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
 

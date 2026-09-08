@@ -58,6 +58,9 @@ function applyUserFilter() {
     }
 
     switch (filter) {
+        case 'most_active':
+            filtered = filtered.filter(u => isUserSubActive(u));
+            break;
         case 'expired_or_expiring':
             filtered = filtered.filter(u => {
                 if (u.status === 'banned') return false;
