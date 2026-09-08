@@ -681,29 +681,34 @@
 .details-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding-bottom: 14px;
+    gap: 10px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--color-border-subtle);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 .details-phone-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
     background: rgba(59, 130, 246, 0.1);
     color: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
+    flex-shrink: 0;
 }
 .details-title-group {
     flex: 1;
+    min-width: 0;
 }
 .details-title-group h3 {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .details-close-btn {
     background: none;
@@ -712,27 +717,33 @@
     font-size: 20px;
     cursor: pointer;
     padding: 4px;
+    line-height: 1;
+}
+.details-close-btn:hover {
+    color: var(--color-text-primary);
 }
 .details-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 .details-item {
     background: var(--color-surface-base);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-xs);
-    padding: 10px 12px;
+    padding: 8px 10px;
 }
 .details-label {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 11px;
     color: var(--color-text-muted);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 .details-value {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--color-text-primary);
 }
@@ -742,63 +753,99 @@
     cursor: pointer;
 }
 
-/* Actions Grid inside Modal */
+/* Actions Grid inside Modal — Perfectly Symmetrical & Geometric 2x2 Grid */
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 6px;
 }
+
 .action-card-btn {
     background: var(--color-surface-card-alt);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-xs);
-    padding: 12px 8px;
+    padding: 8px 10px;
+    height: 38px;
     cursor: pointer;
     color: var(--color-text-primary);
     font-family: var(--font-family-base);
     font-size: 12px;
     font-weight: 600;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     transition: var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
 }
 .action-card-btn i {
-    font-size: 18px;
+    font-size: 15px;
     color: var(--color-primary);
+    flex-shrink: 0;
 }
 .action-card-btn:hover {
-    background: rgba(59, 130, 246, 0.08);
+    background: rgba(59, 130, 246, 0.1);
     border-color: var(--color-primary);
+    color: #fff;
+}
+.action-card-btn:active {
+    transform: scale(0.97);
+}
+
+.action-card-btn.danger-soft,
+.action-card-btn.danger {
+    color: #F87171;
 }
 .action-card-btn.danger-soft i,
 .action-card-btn.danger i {
-    color: var(--color-status-danger);
+    color: #F87171;
 }
 .action-card-btn.danger-soft:hover,
 .action-card-btn.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: var(--color-status-danger);
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #FCA5A5;
+}
+
+.action-card-btn.success {
+    color: #34D399;
+}
+.action-card-btn.success i {
+    color: #34D399;
+}
+.action-card-btn.success:hover {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.5);
 }
 
 .action-card-btn-full {
     width: 100%;
-    padding: 10px;
+    height: 36px;
+    padding: 6px 12px;
     border-radius: var(--radius-xs);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     font-family: var(--font-family-base);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    margin-top: 10px;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.08);
+    margin-top: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.06);
     color: #F87171;
+    transition: var(--transition-fast);
+}
+.action-card-btn-full:hover {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.45);
+}
+.action-card-btn-full:active {
+    transform: scale(0.98);
 }
 
 /* ── TOASTS & SPINNERS ── */

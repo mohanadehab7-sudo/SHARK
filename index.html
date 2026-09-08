@@ -23,7 +23,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-    <link rel="stylesheet" href="style.css?v=9.8">
+    <link rel="stylesheet" href="style.css?v=9.9">
 </head>
 <body>
 
@@ -277,18 +277,18 @@
             </div>
 
             <!-- Device ID -->
-            <div class="details-item" style="margin-bottom:14px; display:flex; align-items:center; justify-content:space-between;">
+            <div class="details-item" style="margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <span class="details-label"><i class="ri-fingerprint-line" aria-hidden="true"></i> معرف الجهاز</span>
                     <span id="modalDeviceId" class="details-value" style="font-family:var(--font-family-mono); font-size:11px; word-break:break-all;">—</span>
                 </div>
-                <button onclick="copyModalDeviceId()" class="btn-secondary" style="padding:5px 10px; font-size:11px;" title="نسخ المعرف">
+                <button onclick="copyModalDeviceId()" class="btn-secondary" style="padding:4px 10px; font-size:11px;" title="نسخ المعرف">
                     <i class="ri-file-copy-line" aria-hidden="true"></i> نسخ
                 </button>
             </div>
 
             <!-- Quick Action Grid -->
-            <label class="details-label" style="margin-bottom:8px;"><i class="ri-flashlight-line" aria-hidden="true"></i> الإجراءات:</label>
+            <label class="details-label" style="margin-bottom:6px;"><i class="ri-flashlight-line" aria-hidden="true"></i> الإجراءات:</label>
             <div class="actions-grid">
                 <button class="action-card-btn" onclick="renewFromModal()">
                     <i class="ri-refresh-line" aria-hidden="true"></i><span>تجديد</span>
@@ -305,7 +305,7 @@
             </div>
 
             <!-- Delete confirmation -->
-            <div id="modalDeleteSection" style="margin-top:12px;">
+            <div id="modalDeleteSection" style="margin-top:8px;">
                 <div id="modalDeleteConfirm" style="display:none; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:var(--radius-xs); padding:10px; margin-bottom:8px;">
                     <div style="font-size:12px; color:#F87171; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                         <i class="ri-alert-line" aria-hidden="true"></i>
@@ -464,16 +464,16 @@
 
 <!-- Core Supabase & App Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=9.8"></script>
-<script src="js/api.js?v=9.8"></script>
-<script src="js/ui.js?v=9.8"></script>
-<script src="js/auth.js?v=9.8"></script>
-<script src="js/dashboard.js?v=9.8"></script>
-<script src="js/users.js?v=9.8"></script>
-<script src="js/messages.js?v=9.8"></script>
-<script src="js/renew.js?v=9.8"></script>
-<script src="js/codes.js?v=9.8"></script>
-<script src="js/settings.js?v=9.8"></script>
-<script src="js/app.js?v=9.8"></script>
+<script src="config.js?v=9.9"></script>
+<script src="js/api.js?v=9.9"></script>
+<script src="js/ui.js?v=9.9"></script>
+<script src="js/auth.js?v=9.9"></script>
+<script src="js/dashboard.js?v=9.9"></script>
+<script src="js/users.js?v=9.9"></script>
+<script src="js/messages.js?v=9.9"></script>
+<script src="js/renew.js?v=9.9"></script>
+<script src="js/codes.js?v=9.9"></script>
+<script src="js/settings.js?v=9.9"></script>
+<script src="js/app.js?v=9.9"></script>
 </body>
 </html>

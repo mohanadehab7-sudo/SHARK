@@ -2,8 +2,8 @@
    SHARK BOT ADMIN — MASTER STYLESHEET (KAFR SAKR THEME)
    ════════════════════════════════════════════════════ */
 
-@import url('css/tokens.css');
-@import url('css/components.css');
+@import url('css/tokens.css?v=9.9');
+@import url('css/components.css?v=9.9');
 
 /* ════════════════ LOGIN SCREEN ════════════════ */
 .login-container {
