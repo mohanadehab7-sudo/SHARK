@@ -87,14 +87,6 @@ function initSettings() {
         }
     });
 
-    // Delegate delete unused codes button to robust handler
-    document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (window.deleteUnusedCodes) {
-            window.deleteUnusedCodes();
-        }
-    });
-
     // Danger Zone: Clean Emulators
     document.getElementById('cleanEmulatorsBtn')?.addEventListener('click', async () => {
         if (!confirm('هل أنت متأكد من تنظيف وحذف جميع أجهزة المحاكاة واختبارات جوجل من قاعدة البيانات؟ لن يتم لمس أي جهاز مرتبط بكود تفعيل.')) return;

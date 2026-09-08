@@ -71,9 +71,30 @@ function quickBroadcastMsg() {
 }
 window.quickBroadcastMsg = quickBroadcastMsg;
 
+function filterFromStat(type) {
+    if (type === 'codes') {
+        const codesTabBtn = document.getElementById('tab-codes');
+        if (codesTabBtn) codesTabBtn.click();
+        return;
+    }
+    // Switch to users tab if not active
+    const usersTabBtn = document.getElementById('tab-users');
+    if (usersTabBtn) usersTabBtn.click();
+
+    const userFilter = document.getElementById('userFilter');
+    if (userFilter) {
+        userFilter.value = type;
+        if (typeof applyUserFilter === 'function') {
+            applyUserFilter();
+        }
+    }
+}
+window.filterFromStat = filterFromStat;
+
 window.loadExpiryTable = loadExpiryTable;
 window.SHARK.dashboard = {
     loadDashboardData,
     loadExpiryTable,
-    quickBroadcastMsg
+    quickBroadcastMsg,
+    filterFromStat
 };

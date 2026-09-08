@@ -128,11 +128,20 @@ async function activateCode(key) {
 }
 
 async function deleteCode(key) {
-    if (!confirm('هل تريد حذف الكود نهائياً؟')) return;
-    await window.sb.from('licenses').delete().eq('license_key', key);
-    showToast('تم حذف الكود', 'success');
-    loadCodesData();
-    window.SHARK.dashboard?.loadDashboardData();
+    if (!confirm('هل تريد حذف هذا الكود نهائياً؟')) return;
+    showLoading(true);
+    try {
+        const { error } = await window.sb.from('licenses').delete().eq('license_key', key);
+        if (error) throw error;
+        showToast('تم حذف الكود بنجاح', 'success');
+        await loadCodesData();
+        await window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Delete code error:", err);
+        showToast('فشل حذف الكود: ' + (err.message || err), 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // ── CODE GENERATOR ────────────────────────────────────────────────────────
@@ -394,41 +403,30 @@ window.generateCustomDaysCode = generateCustomDaysCode;
 
 // ── Robust Deletion of Unused Codes ──────────────────────────────────────────
 async function deleteUnusedCodes() {
-    // 1. Gather keys from active memory state
-    const codes = window.SHARK.state.codesData || [];
-    let unusedKeys = codes
-        .filter(c => !c.device_id || c.device_id.trim() === '')
-        .map(c => c.license_key);
-
-    // 2. Double check directly with DB if state is empty
-    if (!unusedKeys.length) {
-        try {
-            const { data, error } = await window.sb.from('licenses').select('license_key, device_id');
-            if (!error && data) {
-                unusedKeys = data
-                    .filter(c => !c.device_id || c.device_id.trim() === '')
-                    .map(c => c.license_key);
-            }
-        } catch (e) {
-            console.error("DB check error:", e);
-        }
-    }
-
-    if (!unusedKeys.length) {
-        showToast('لا توجد أكواد غير مستخدمة لحذفها', 'info');
-        return;
-    }
-
-    if (!confirm(`هل أنت متأكد من حذف ${unusedKeys.length} كود غير مستخدم نهائياً؟`)) return;
-
     showLoading(true);
     try {
-        // Delete in safe chunks of 40 keys to avoid URL parameter limits
-        const chunkSize = 40;
-        for (let i = 0; i < unusedKeys.length; i += chunkSize) {
-            const chunk = unusedKeys.slice(i, i + chunkSize);
-            const { error } = await window.sb.from('licenses').delete().in('license_key', chunk);
-            if (error) throw error;
+        // Query directly from database to get fresh list of unused licenses
+        const { data, error } = await window.sb.from('licenses').select('license_key, device_id');
+        if (error) throw error;
+
+        const unusedKeys = (data || [])
+            .filter(c => !c.device_id || String(c.device_id).trim() === '')
+            .map(c => c.license_key);
+
+        if (!unusedKeys.length) {
+            showToast('لا توجد أكواد غير مستخدمة لحذفها', 'info');
+            return;
+        }
+
+        if (!confirm(`هل أنت متأكد من حذف ${unusedKeys.length} كود غير مستخدم نهائياً؟`)) {
+            return;
+        }
+
+        // Delete in safe chunks of 25 keys
+        for (let i = 0; i < unusedKeys.length; i += 25) {
+            const chunk = unusedKeys.slice(i, i + 25);
+            const { error: delErr } = await window.sb.from('licenses').delete().in('license_key', chunk);
+            if (delErr) throw delErr;
         }
 
         showToast(`تم حذف ${unusedKeys.length} كود غير مستخدم بنجاح`, 'success');
@@ -436,7 +434,7 @@ async function deleteUnusedCodes() {
         await window.SHARK.dashboard?.loadDashboardData();
     } catch (err) {
         console.error("Delete unused codes error:", err);
-        showToast('فشل حذف الأكواد: ' + err.message, 'error');
+        showToast('فشل حذف الأكواد: ' + (err.message || err), 'error');
     } finally {
         showLoading(false);
     }

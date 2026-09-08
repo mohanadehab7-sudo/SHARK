@@ -109,21 +109,21 @@
 
         <!-- ── TAB: USERS (المشتركين — الصفحة الرئيسية الموحدة) ── -->
         <div id="users" class="tab-content active" role="tabpanel" aria-labelledby="tab-users">
-            <!-- Metrics Grid -->
+            <!-- Single-Row Ultra-Compact Clickable Stats Bar -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card" onclick="filterFromStat('all')" title="عرض جميع الأجهزة" role="button" tabindex="0">
                     <div class="stat-icon"><i class="ri-smartphone-line" aria-hidden="true"></i></div>
                     <div class="stat-info"><h3 id="totalUsers">0</h3><p>الأجهزة</p></div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ri-wifi-line" aria-hidden="true"></i></div>
+                <div class="stat-card" onclick="filterFromStat('most_active')" title="تصفية النشطة فقط" role="button" tabindex="0">
+                    <div class="stat-icon active"><i class="ri-wifi-line" aria-hidden="true"></i></div>
                     <div class="stat-info"><h3 id="activeUsers">0</h3><p>النشطة</p></div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ri-key-2-line" aria-hidden="true"></i></div>
+                <div class="stat-card" onclick="filterFromStat('codes')" title="الانتقال لجدول الأكواد" role="button" tabindex="0">
+                    <div class="stat-icon info"><i class="ri-key-2-line" aria-hidden="true"></i></div>
                     <div class="stat-info"><h3 id="availableCodes">0</h3><p>الأكواد</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" onclick="filterFromStat('blocked')" title="تصفية المحظورة فقط" role="button" tabindex="0">
                     <div class="stat-icon danger"><i class="ri-user-forbid-line" aria-hidden="true"></i></div>
                     <div class="stat-info"><h3 id="blockedUsers">0</h3><p>المحظورة</p></div>
                 </div>
