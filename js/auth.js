@@ -1,12 +1,12 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — AUTHENTICATION & ACCESS CONTROL
+ * SHARK ADMIN DASHBOARD — AUTHENTICATION & ACCESS CONTROL
  * Manages Supabase Admin Session, login flow, logout, and protected UI state.
  */
 
 window.SHARK = window.SHARK || {};
 
 function initAuth() {
-    const loginScreen = document.getElementById('loginScreen');
+    const loginScreen = document.getElementById('loginOverlay') || document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
@@ -21,7 +21,7 @@ function initAuth() {
         togglePasswordBtn.addEventListener('click', () => {
             const isPassword = loginPassword.type === 'password';
             loginPassword.type = isPassword ? 'text' : 'password';
-            togglePasswordIcon.className = isPassword ? 'far fa-eye-slash' : 'far fa-eye';
+            togglePasswordIcon.className = isPassword ? 'ri-eye-off-line' : 'ri-eye-line';
             togglePasswordBtn.setAttribute('aria-label', isPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
         });
     }
@@ -29,8 +29,9 @@ function initAuth() {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            const emailInput = document.getElementById('loginEmail');
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = document.getElementById('loginPassword')?.value || '';
 
             showLoading(true);
             if (loginError) loginError.style.display = 'none';
@@ -41,14 +42,14 @@ function initAuth() {
 
                 window.SHARK.state.currentUser = data.user;
                 showMainApp();
-                showToast('✅ تم تسجيل الدخول بنجاح', 'success');
+                showToast('تم تسجيل الدخول بنجاح', 'success');
             } catch (err) {
                 console.error("Login failed:", err);
                 if (loginError) {
                     loginError.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة، أو لا تملك صلاحيات كمدير.';
                     loginError.style.display = 'block';
                 }
-                showToast('❌ تعذر تسجيل الدخول', 'error');
+                showToast('تعذر تسجيل الدخول، تحقق من البيانات المدخلة', 'error');
             } finally {
                 showLoading(false);
             }
@@ -84,7 +85,7 @@ function initAuth() {
 }
 
 function showMainApp() {
-    const loginScreen = document.getElementById('loginScreen');
+    const loginScreen = document.getElementById('loginOverlay') || document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
     const welcomeUser = document.getElementById('welcomeUser');
 

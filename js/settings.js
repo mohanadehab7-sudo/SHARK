@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — BOT & PLATFORM SETTINGS
+ * SHARK ADMIN DASHBOARD — BOT & PLATFORM SETTINGS
  * Controls global bot operational modes, trial window, announcements, and database housekeeping.
  */
 
@@ -57,11 +57,11 @@ function initSettings() {
 
             if (error) throw error;
 
-            showToast('✅ تم حفظ الإعدادات بنجاح', 'success');
+            showToast('تم حفظ الإعدادات بنجاح', 'success');
             await window.SHARK.dashboard?.loadDashboardData();
         } catch (err) {
             console.error("Save settings error:", err);
-            showToast('❌ فشل حفظ الإعدادات: ' + err.message, 'error');
+            showToast('فشل حفظ الإعدادات: ' + err.message, 'error');
         } finally {
             showLoading(false);
         }
@@ -74,11 +74,11 @@ function initSettings() {
         try {
             const { error } = await window.sb.from('licenses').delete().is('device_id', null);
             if (error) throw error;
-            showToast('✅ تم حذف الأكواد غير المستخدمة', 'success');
+            showToast('تم حذف الأكواد غير المستخدمة بنجاح', 'success');
             await window.SHARK.codes?.loadCodesData();
             await window.SHARK.dashboard?.loadDashboardData();
         } catch (err) {
-            showToast('❌ خطأ: ' + err.message, 'error');
+            showToast('خطأ: ' + err.message, 'error');
         } finally {
             showLoading(false);
         }
@@ -111,7 +111,7 @@ function initSettings() {
             });
 
             if (emulatorsToDelete.length === 0) {
-                showToast('ℹ️ لم يتم العثور على أجهزة محاكاة لحذفها.', 'info');
+                showToast('لم يتم العثور على أجهزة محاكاة لحذفها', 'info');
                 showLoading(false);
                 return;
             }
@@ -122,13 +122,13 @@ function initSettings() {
             const { error: deleteError } = await window.sb.from('devices').delete().in('device_id', idsToDelete);
             if (deleteError) throw deleteError;
 
-            showToast(`✅ تم تنظيف ${emulatorsToDelete.length} جهاز محاكاة بنجاح!`, 'success');
+            showToast(`تم تنظيف ${emulatorsToDelete.length} جهاز محاكاة بنجاح`, 'success');
             if (window.SHARK.loadAllData) {
                 await window.SHARK.loadAllData();
             }
         } catch (err) {
             console.error("Emulator cleanup error:", err);
-            showToast('❌ حدث خطأ أثناء تنظيف أجهزة المحاكاة', 'error');
+            showToast('حدث خطأ أثناء تنظيف أجهزة المحاكاة', 'error');
         } finally {
             showLoading(false);
         }
@@ -141,10 +141,10 @@ function initSettings() {
         try {
             const { error } = await window.sb.from('devices').update({ total_runs: 0, total_minutes: 0 }).neq('device_id', '');
             if (error) throw error;
-            showToast('✅ تم تصفير جميع الإحصائيات بنجاح', 'success');
+            showToast('تم تصفير جميع الإحصائيات بنجاح', 'success');
             await window.SHARK.users?.loadUsersData();
         } catch (err) {
-            showToast('❌ خطأ: ' + err.message, 'error');
+            showToast('خطأ: ' + err.message, 'error');
         } finally {
             showLoading(false);
         }

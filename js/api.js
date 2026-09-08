@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — API & CLIENT INITIALIZATION
+ * SHARK ADMIN DASHBOARD — API & CLIENT INITIALIZATION
  * Handles Supabase client initialization, secure Edge Function calls,
  * and data escaping helpers.
  */

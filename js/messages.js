@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — IN-APP MESSAGING
+ * SHARK ADMIN DASHBOARD — IN-APP MESSAGING
  * Allows sending instant push/in-app notices to individual devices or all filtered users.
  */
 
@@ -45,7 +45,7 @@ async function confirmSendMessage() {
             }
 
             if (ids.length === 0) {
-                showToast('⚠️ لا يوجد مستخدمون محددون لإرسال الرسالة لهم', 'warning');
+                showToast('لا يوجد مستخدمون محددون لإرسال الرسالة لهم', 'warning');
                 showLoading(false);
                 return;
             }
@@ -53,15 +53,15 @@ async function confirmSendMessage() {
             for (const id of ids) {
                 await window.sb.from('devices').update({ message: msg }).eq('device_id', id);
             }
-            showToast(`✅ تم إرسال الرسالة لـ ${ids.length} جهاز بنجاح`, 'success');
+            showToast(`تم إرسال الرسالة إلى ${ids.length} جهاز بنجاح`, 'success');
         } else {
             const { error } = await window.sb.from('devices').update({ message: msg }).eq('device_id', pendingMsgDeviceId);
             if (error) throw error;
-            showToast('✅ تم إرسال الرسالة للجهاز بنجاح', 'success');
+            showToast('تم إرسال الرسالة للجهاز بنجاح', 'success');
         }
     } catch (err) {
         console.error("Message send failed:", err);
-        showToast('❌ خطأ في إرسال الرسالة: ' + (err.message || err), 'error');
+        showToast('خطأ في إرسال الرسالة: ' + (err.message || err), 'error');
     } finally {
         showLoading(false);
         closeMsgModal();

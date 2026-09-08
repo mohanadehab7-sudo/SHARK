@@ -1,6 +1,6 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — SUBSCRIPTION RENEWAL & LICENSING ASSIGNMENT
- * Handles subscription extension, custom date selection, lifetime upgrades, and license disassociation.
+ * SHARK ADMIN DASHBOARD — SUBSCRIPTION RENEWAL & LICENSING ASSIGNMENT
+ * Handles single/batch subscription extensions, custom duration overrides, and license disassociation.
  */
 
 window.SHARK = window.SHARK || {};
@@ -30,13 +30,13 @@ function openRenewModal(deviceId) {
         if (lic?.expires_at) {
             const diff = new Date(lic.expires_at) - new Date();
             const daysLeft = Math.ceil(diff / 86400000);
-            nameEl.innerHTML = `📱 <b style="color:var(--neon)">${phoneName}</b> &nbsp;|&nbsp;
-                ينتهي: <b style="color:${diff < 0 ? 'var(--danger)' : 'var(--text)'}">${formatDate(lic.expires_at)}</b>
-                <span style="color:var(--muted);font-size:11px;">${diff > 0 ? `(${daysLeft} يوم متبقي)` : '(منتهي)'}</span>`;
+            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp;
+                ينتهي: <b style="color:${diff < 0 ? 'var(--color-status-danger)' : 'var(--color-text-primary)'}">${formatDate(lic.expires_at)}</b>
+                <span style="color:var(--color-text-muted);font-size:11px;">${diff > 0 ? `(${daysLeft} يوم متبقي)` : '(منتهي)'}</span>`;
         } else if (lic && !lic.expires_at) {
-            nameEl.innerHTML = `📱 <b style="color:var(--neon)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;">♾️ مدى الحياة حالياً</span>`;
+            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;"><i class="ri-infinity-line"></i> مدى الحياة حالياً</span>`;
         } else {
-            nameEl.innerHTML = `📱 <b style="color:var(--neon)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:var(--muted);">لا يوجد اشتراك</span>`;
+            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:var(--color-text-muted);">لا يوجد اشتراك</span>`;
         }
     }
 
@@ -135,12 +135,12 @@ function updateRenewInfo() {
     const renewState = window.SHARK.state.renewState;
 
     if (renewState.isLifetime) {
-        el.innerHTML = '♾️ سيكون اشتراكه <b>مدى الحياة</b> — لن ينتهي أبداً';
+        el.innerHTML = '<i class="ri-infinity-line"></i> سيكون اشتراكه <b>مدى الحياة</b> — لن ينتهي أبداً';
         return;
     }
     if (renewState.customExpiryDate) {
         const d = new Date(renewState.customExpiryDate);
-        el.innerHTML = `📅 سينتهي في: <b style="color:var(--neon)">${d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</b> (تاريخ محدد يدوياً)`;
+        el.innerHTML = `<i class="ri-calendar-line"></i> سينتهي في: <b style="color:var(--color-primary)">${d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</b> (تاريخ محدد يدوياً)`;
         return;
     }
     if (!renewState.days) {
@@ -154,7 +154,7 @@ function updateRenewInfo() {
         : now;
     const end = new Date(base.getTime() + renewState.days * 86400000);
     const isExtend = renewState.currentSubEnd && new Date(renewState.currentSubEnd) > now;
-    el.innerHTML = `${isExtend ? '➕ تمديد — ' : '🆕 يبدأ من الآن — '}سينتهي في: <b style="color:var(--neon)">${end.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</b>`;
+    el.innerHTML = `${isExtend ? 'تمديد — ' : 'يبدأ من الآن — '}سينتهي في: <b style="color:var(--color-primary)">${end.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</b>`;
 }
 
 async function confirmRenew() {
@@ -204,7 +204,7 @@ async function confirmRenew() {
             }]);
         }
 
-        showToast('✅ تم تجديد الاشتراك بنجاح', 'success');
+        showToast('تم تجديد الاشتراك بنجاح', 'success');
         closeRenewModal();
         await Promise.all([
             window.SHARK.codes?.loadCodesData(),
@@ -237,7 +237,7 @@ async function revokeDeviceLicense(deviceId) {
 
         if (error) throw error;
 
-        showToast('✅ تم إلغاء الارتباط — الكود متاح مجدداً', 'success');
+        showToast('تم إلغاء الارتباط، الكود متاح مجدداً', 'success');
         await Promise.all([
             window.SHARK.codes?.loadCodesData(),
             window.SHARK.users?.loadUsersData(),

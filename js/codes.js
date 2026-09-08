@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — LICENSE CODES & CRYPTOGRAPHIC GENERATOR
+ * SHARK ADMIN DASHBOARD — LICENSE CODES & CRYPTOGRAPHIC GENERATOR
  * Handles license key issuance, status filtering, clipboard batch export, and state management.
  */
 
@@ -56,7 +56,7 @@ function displayCodes(codes) {
     if (!tbody) return;
 
     if (!codes.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-cell"><i class="fas fa-key"></i> لا توجد أكواد</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="loading-cell"><i class="ri-key-2-line"></i> لا توجد أكواد</td></tr>';
         return;
     }
 
@@ -73,47 +73,47 @@ function displayCodes(codes) {
 
         let durationText;
         if (isTrial) {
-            durationText = '<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;">⚡ 3 ساعات</span>';
+            durationText = '<span style="background:rgba(245,158,11,0.12);color:#FBBF24;border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700;">3 ساعات</span>';
         } else if (isLifetime) {
-            durationText = '<span style="background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;">♾️ مدى الحياة</span>';
+            durationText = '<span style="background:rgba(99,102,241,0.12);color:#818CF8;border:1px solid rgba(99,102,241,0.3);border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700;">مدى الحياة</span>';
         } else if (c.duration_days) {
             let label;
-            if (c.duration_days === 7) label = '📅 أسبوع';
-            else if (c.duration_days === 30) label = '📆 شهر';
-            else if (c.duration_days === 90) label = '📆 3 شهور';
-            else label = `📆 ${Math.round(c.duration_days)} يوم`;
-            durationText = `<span style="font-size:13px;color:var(--text);font-weight:600;">${label}</span>`;
+            if (c.duration_days === 7) label = 'أسبوع';
+            else if (c.duration_days === 30) label = 'شهر';
+            else if (c.duration_days === 90) label = '3 شهور';
+            else label = `${Math.round(c.duration_days)} يوم`;
+            durationText = `<span style="font-size:13px;color:var(--color-text-primary);font-weight:600;">${label}</span>`;
         } else {
-            durationText = '<span style="color:var(--muted);">—</span>';
+            durationText = '<span style="color:var(--color-text-muted);">—</span>';
         }
 
         let expiryText = '';
-        if (isLifetime && isUsed) expiryText = '♾️ مدى الحياة';
+        if (isLifetime && isUsed) expiryText = 'مدى الحياة';
         else if (!isUsed && (!c.expires_at || c.expires_at.startsWith('2099-01-01'))) expiryText = 'لم يُفعّل بعد';
         else if (c.expires_at) expiryText = formatDate(c.expires_at);
         else expiryText = '—';
 
         const safeKey = escapeHtml(c.license_key);
-        const deviceDisplay = c.device_id ? escapeHtml(c.device_id.substring(0, 12)) + '...' : '-';
+        const deviceDisplay = c.device_id ? escapeHtml(c.device_id.substring(0, 10)) + '...' : '-';
 
         return `<tr>
-            <td style="color:var(--muted);">${i + 1}</td>
-            <td style="font-family:'JetBrains Mono',monospace;color:var(--neon);font-size:13px;">
+            <td style="color:var(--color-text-muted);">${i + 1}</td>
+            <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:13px;font-weight:700;">
                 ${safeKey}
-                <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('✅ تم نسخ الكود بنجاح','success')" title="نسخ الكود" style="background:rgba(0,243,255,0.1);border:1px solid rgba(0,243,255,0.2);color:var(--neon);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:11px;margin-right:6px;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="نسخ الكود" class="table-btn" style="padding:2px 6px;margin-right:6px;">
+                    <i class="ri-file-copy-line"></i>
                 </button>
             </td>
             <td>${durationText}</td>
             <td>${statusBadge}</td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${deviceDisplay}</td>
-            <td style="font-size:12px;color:var(--muted);">${expiryText}</td>
+            <td style="font-family:var(--font-family-mono);font-size:11px;color:var(--color-text-muted);">${deviceDisplay}</td>
+            <td style="font-size:12px;color:var(--color-text-secondary);">${expiryText}</td>
             <td>
                 ${c.status === 'active'
-                    ? `<button class="table-btn block" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت"><i class="fas fa-pause"></i></button>`
-                    : `<button class="table-btn unblock" onclick="activateCode('${safeKey}')" title="إعادة تفعيل"><i class="fas fa-play"></i></button>`
+                    ? `<button class="table-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت"><i class="ri-pause-line"></i></button>`
+                    : `<button class="table-btn" onclick="activateCode('${safeKey}')" title="إعادة تفعيل"><i class="ri-play-line"></i></button>`
                 }
-                <button class="table-btn delete" onclick="deleteCode('${safeKey}')" title="حذف"><i class="fas fa-trash"></i></button>
+                <button class="table-btn delete" onclick="deleteCode('${safeKey}')" title="حذف"><i class="ri-delete-bin-line"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -127,7 +127,7 @@ async function suspendCode(key) {
 
 async function activateCode(key) {
     await window.sb.from('licenses').update({ status: 'active' }).eq('license_key', key);
-    showToast('✅ تم إعادة تفعيل الكود بنجاح', 'success');
+    showToast('تم إعادة تفعيل الكود بنجاح', 'success');
     loadCodesData();
 }
 
@@ -231,9 +231,9 @@ function updateSummary() {
     let dur;
 
     if (type === 'lifetime') {
-        dur = '♾️ مدى الحياة';
+        dur = 'مدى الحياة';
     } else if (type === 'preset' && generatorState.days === 0.125) {
-        dur = '⚡ 3 ساعات تجربة';
+        dur = '3 ساعات تجربة';
     } else if (type === 'date' && generatorState.expiryDate) {
         dur = `حتى ${new Date(generatorState.expiryDate).toLocaleDateString('ar-EG')}`;
     } else if (generatorState.customHours) {
@@ -300,7 +300,7 @@ async function generateCodes() {
         const { error } = await window.sb.from('licenses').insert(rows);
         if (error) throw error;
 
-        showToast(`✅ تم توليد ${count} كود بنجاح!`, 'success');
+        showToast(`تم توليد ${count} كود بنجاح`, 'success');
         loadCodesData();
         window.SHARK.dashboard?.loadDashboardData();
     } catch (err) {
@@ -324,7 +324,7 @@ document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
         return;
     }
     navigator.clipboard.writeText(available);
-    showToast(`✅ تم نسخ ${available.split('\n').length} كود إلى الحافظة`, 'success');
+    showToast(`تم نسخ ${available.split('\n').length} كود إلى الحافظة`, 'success');
 });
 
 async function quickGenerateCode(days, label) {
@@ -348,12 +348,12 @@ async function quickGenerateCode(days, label) {
         if (error) throw error;
 
         await navigator.clipboard.writeText(key);
-        showToast(`✅ تم إنشاء كود (${label}) ونسخه للحافظة بنجاح: ${key}`, 'success');
+        showToast(`تم إنشاء كود (${label}) ونسخه للحافظة بنجاح: ${key}`, 'success');
         await loadCodesData();
         await window.SHARK.dashboard?.loadDashboardData();
     } catch (err) {
         console.error("Quick generate error:", err);
-        showToast('❌ فشل إنشاء الكود: ' + err.message, 'error');
+        showToast('فشل إنشاء الكود: ' + err.message, 'error');
     } finally {
         showLoading(false);
     }

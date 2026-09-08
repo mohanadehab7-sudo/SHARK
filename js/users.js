@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — USERS & DEVICES
+ * SHARK ADMIN DASHBOARD — USERS & DEVICES
  * Handles device listings, search, status filtering, and the unified user management sheet.
  */
 
@@ -136,34 +136,34 @@ function displayUsers(users) {
             : '<span class="badge badge-banned">محظور</span>';
 
         let subEnd = '<span class="badge badge-expired">بدون ترخيص</span>';
-        let remainingCell = '<span style="color:var(--muted);font-size:11px;">—</span>';
+        let remainingCell = '<span style="color:var(--color-text-muted);font-size:11px;">—</span>';
 
         if (lic) {
             if (!lic.expires_at) {
-                subEnd = '<span class="badge badge-lifetime">♾️ مدى الحياة</span>';
-                remainingCell = '<span class="badge badge-lifetime" style="font-size:10px;">♾️</span>';
+                subEnd = '<span class="badge badge-lifetime">مدى الحياة</span>';
+                remainingCell = '<span class="badge badge-lifetime" style="font-size:10px;">دائم</span>';
             } else {
                 subEnd = formatSubEnd(lic.expires_at);
                 remainingCell = formatRemainingDays(lic.expires_at);
             }
         } else if (mode === 'free') {
-            subEnd = '<span style="color:#34d399;">🎁 مجاني</span>';
-            remainingCell = '<span style="color:#34d399;">♾️</span>';
+            subEnd = '<span style="color:#10B981;">مجاني</span>';
+            remainingCell = '<span style="color:#10B981;">دائم</span>';
         } else if (mode === 'trial') {
             const created = u.created_at ? new Date(u.created_at) : new Date();
             const trialEnd = new Date(created.getTime() + 24 * 3600000);
             const msLeft = trialEnd - new Date();
             const hoursLeft = msLeft / 3600000;
             if (hoursLeft > 0) {
-                subEnd = `<span class="badge badge-active" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.4);"><i class="fas fa-clock" style="margin-left:4px;"></i>تجربة (${hoursLeft.toFixed(1)}س)</span>`;
-                remainingCell = `<span style="color:#60a5fa;font-weight:700;font-size:11px;">${hoursLeft.toFixed(1)}س</span>`;
+                subEnd = `<span class="badge badge-active" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);"><i class="ri-time-line" style="margin-left:3px;"></i>تجربة (${hoursLeft.toFixed(1)}س)</span>`;
+                remainingCell = `<span style="color:#38BDF8;font-weight:700;font-size:11px;">${hoursLeft.toFixed(1)}س</span>`;
             } else {
-                subEnd = '<span class="badge badge-expired"><i class="fas fa-hourglass-end" style="margin-left:4px;"></i>انتهت التجربة</span>';
+                subEnd = '<span class="badge badge-expired"><i class="ri-time-line" style="margin-left:3px;"></i>انتهت التجربة</span>';
                 remainingCell = '<span style="color:var(--danger);font-size:11px;">منتهي</span>';
             }
         } else if (mode === 'shutdown') {
-            subEnd = '<span class="badge badge-banned"><i class="fas fa-power-off" style="margin-left:4px;"></i>موقوف</span>';
-            remainingCell = '<span style="color:var(--muted);font-size:11px;">—</span>';
+            subEnd = '<span class="badge badge-banned"><i class="ri-shut-down-line" style="margin-left:3px;"></i>موقوف</span>';
+            remainingCell = '<span style="color:var(--color-text-muted);font-size:11px;">—</span>';
         }
 
         const safeName = escapeHtml(u.device_name || 'غير معروف');
@@ -174,21 +174,21 @@ function displayUsers(users) {
         // Desktop Table Row
         rowsHtml.push(`<tr>
             <td style="text-align:center;">${onlineDot}</td>
-            <td style="font-size:12px;font-weight:700;color:var(--neon);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${safeName}">
-                📱 ${deviceDisplay}
+            <td style="font-size:12px;font-weight:700;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${safeName}">
+                <i class="ri-smartphone-line" style="color:var(--color-primary);margin-left:3px;"></i>${deviceDisplay}
             </td>
-            <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل">
-                ${safeIdShort}... <i class="far fa-copy" style="font-size:9px;margin-left:2px;"></i>
+            <td style="font-size:11px;font-family:var(--font-family-mono);color:var(--color-text-muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل">
+                ${safeIdShort}... <i class="ri-file-copy-line" style="font-size:10px;margin-left:2px;"></i>
             </td>
             <td>${formatRelative(u.last_seen)}</td>
             <td>${subEnd}</td>
             <td style="text-align:center;">${remainingCell}</td>
-            <td><span class="badge" style="background:rgba(157,23,77,0.1);color:#f0abfc;border:1px solid rgba(157,23,77,0.3);">${u.total_runs || 0}</span></td>
-            <td><span class="badge" style="background:rgba(67,56,202,0.1);color:#a5b4fc;border:1px solid rgba(67,56,202,0.3);">${formatMins(u.total_minutes || 0)}</span></td>
+            <td><span class="badge" style="background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.25);">${u.total_runs || 0}</span></td>
+            <td><span class="badge" style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);">${formatMins(u.total_minutes || 0)}</span></td>
             <td>${statusBadge}</td>
             <td style="white-space:nowrap;">
                 <button class="table-btn details-btn" onclick="openUserProfile('${safeId}')" title="إدارة الجهاز">
-                    <i class="fas fa-sliders-h"></i> <span>إدارة</span>
+                    <i class="ri-settings-4-line"></i> <span>إدارة</span>
                 </button>
             </td>
         </tr>`);
@@ -199,7 +199,7 @@ function displayUsers(users) {
                 <div class="user-card-header">
                     <div class="user-card-title-group">
                         ${onlineDot}
-                        <span class="user-card-title">📱 ${deviceDisplay}</span>
+                        <span class="user-card-title"><i class="ri-smartphone-line" style="color:var(--color-primary);"></i> ${deviceDisplay}</span>
                     </div>
                     <div style="display:flex;gap:4px;align-items:center;">
                         ${statusBadge}
@@ -216,17 +216,17 @@ function displayUsers(users) {
                     </div>
                     <div class="user-meta-item">
                         <span class="meta-label">المغلفات:</span>
-                        <span style="color:#f0abfc;font-weight:700;">${u.total_runs || 0}</span>
+                        <span style="color:#C084FC;font-weight:700;">${u.total_runs || 0}</span>
                     </div>
                     <div class="user-meta-item">
                         <span class="meta-label">التشغيل:</span>
-                        <span style="color:#a5b4fc;font-weight:700;">${formatMins(u.total_minutes || 0)}</span>
+                        <span style="color:#38BDF8;font-weight:700;">${formatMins(u.total_minutes || 0)}</span>
                     </div>
                 </div>
                 <div class="user-card-footer">
-                    <span class="user-card-id"><i class="fas fa-fingerprint"></i> ${safeIdShort}...</span>
+                    <span class="user-card-id"><i class="ri-fingerprint-line"></i> ${safeIdShort}...</span>
                     <button class="user-card-action-btn" onclick="event.stopPropagation(); openUserProfile('${safeId}');">
-                        <i class="fas fa-sliders-h"></i> التحكم بالجهاز
+                        <i class="ri-settings-4-line"></i> التحكم بالجهاز
                     </button>
                 </div>
             </div>
@@ -254,15 +254,15 @@ function openUserProfile(deviceId) {
     // Header Info
     const phoneName = user?.device_name || `هاتف (${deviceId?.substring(0, 8)})`;
     const phoneNameEl = document.getElementById('modalPhoneName');
-    if (phoneNameEl) phoneNameEl.textContent = '📱 ' + phoneName;
+    if (phoneNameEl) phoneNameEl.textContent = phoneName;
 
     const isOnline = user?.last_seen && (new Date() - new Date(user.last_seen)) < 300000;
     const onlineBadge = document.getElementById('modalOnlineBadge');
     if (onlineBadge) {
         onlineBadge.textContent = isOnline ? 'متصل الآن' : 'غير متصل';
         onlineBadge.className = isOnline ? 'badge badge-active' : 'badge';
-        onlineBadge.style.background = isOnline ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)';
-        onlineBadge.style.color = isOnline ? '#4ade80' : 'var(--muted)';
+        onlineBadge.style.background = isOnline ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.05)';
+        onlineBadge.style.color = isOnline ? '#10B981' : 'var(--color-text-muted)';
     }
 
     const statusBadge = document.getElementById('modalStatusBadge');
@@ -279,13 +279,13 @@ function openUserProfile(deviceId) {
 
     if (lic) {
         if (!lic.expires_at) {
-            if (subEndEl) subEndEl.textContent = '♾️ مدى الحياة';
-            if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-lifetime">♾️ لا ينتهي</span>';
+            if (subEndEl) subEndEl.textContent = 'مدى الحياة';
+            if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-lifetime">لا ينتهي</span>';
         } else {
             const diff = new Date(lic.expires_at) - new Date();
             if (subEndEl) {
                 subEndEl.textContent = formatDate(lic.expires_at);
-                subEndEl.style.color = diff < 0 ? 'var(--danger)' : diff < 86400000 * 3 ? 'var(--warning)' : 'var(--text)';
+                subEndEl.style.color = diff < 0 ? 'var(--danger)' : diff < 86400000 * 3 ? 'var(--warning)' : 'var(--color-text-primary)';
             }
             if (remainingEl) remainingEl.innerHTML = formatRemainingDays(lic.expires_at);
         }
@@ -300,7 +300,7 @@ function openUserProfile(deviceId) {
         const diff = trialEnd - new Date();
         if (subEndEl) {
             subEndEl.textContent = formatDate(trialEnd.toISOString()) + ' (تجربة)';
-            subEndEl.style.color = diff < 0 ? 'var(--danger)' : '#60a5fa';
+            subEndEl.style.color = diff < 0 ? 'var(--danger)' : '#38BDF8';
         }
         if (remainingEl) remainingEl.innerHTML = formatRemainingDays(trialEnd.toISOString());
         if (licenseKeyEl) {
@@ -308,7 +308,7 @@ function openUserProfile(deviceId) {
             licenseKeyEl.style.cursor = 'default';
         }
     } else if (mode === 'free') {
-        if (subEndEl) subEndEl.textContent = '🎁 وضع مجاني بالكامل';
+        if (subEndEl) subEndEl.textContent = 'وضع مجاني بالكامل';
         if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-active">لا ينتهي</span>';
         if (licenseKeyEl) {
             licenseKeyEl.textContent = '— وضع مجاني —';
@@ -366,14 +366,14 @@ function copyModalCode() {
     const code = document.getElementById('modalLicenseKey')?.textContent;
     if (code && code !== '—' && !code.includes('مجاني')) {
         navigator.clipboard.writeText(code);
-        showToast('✅ تم نسخ كود التفعيل', 'success');
+        showToast('تم نسخ كود التفعيل', 'success');
     }
 }
 
 function copyModalDeviceId() {
     if (currentModalDeviceId) {
         navigator.clipboard.writeText(currentModalDeviceId);
-        showToast('✅ تم نسخ معرف الجهاز (Device ID)', 'success');
+        showToast('تم نسخ معرف الجهاز بنجاح', 'success');
     }
 }
 
@@ -451,23 +451,23 @@ async function deleteUserFromModal() {
 // ── USER CRUD ACTIONS ─────────────────────────────────────────────────────
 
 async function blockUser(deviceId) {
-    const banMsg = "🚫 تم حظر جهازك من استخدام البوت! يرجى التواصل مع الإدارة للمزيد من التفاصيل.";
+    const banMsg = "تم حظر جهازك من استخدام البوت. يرجى مراجعة الإدارة.";
     await window.sb.from('devices').update({ status: 'banned', message: banMsg }).eq('device_id', deviceId);
-    showToast('✅ تم حظر الجهاز بنجاح', 'success');
+    showToast('تم حظر الجهاز بنجاح', 'success');
     await loadUsersData();
     window.SHARK.dashboard?.loadDashboardData();
 }
 
 async function unblockUser(deviceId) {
     await window.sb.from('devices').update({ status: 'active' }).eq('device_id', deviceId);
-    showToast('✅ تم رفع الحظر عن الجهاز', 'success');
+    showToast('تم رفع الحظر عن الجهاز بنجاح', 'success');
     await loadUsersData();
     window.SHARK.dashboard?.loadDashboardData();
 }
 
 async function deleteUser(deviceId) {
     await window.sb.from('devices').delete().eq('device_id', deviceId);
-    showToast('✅ تم حذف الجهاز نهائياً', 'success');
+    showToast('تم حذف الجهاز نهائياً', 'success');
     await loadUsersData();
     window.SHARK.dashboard?.loadDashboardData();
 }

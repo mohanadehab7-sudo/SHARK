@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — UI & PRESENTATION LAYER
+ * SHARK ADMIN DASHBOARD — UI & PRESENTATION LAYER
  * Handles toasts, loading indicators, time formatters, tab switching, and keyboard accessibility.
  */
 
@@ -22,12 +22,12 @@ function showToast(msg, type = 'info') {
     t.setAttribute('role', 'status');
     t.setAttribute('aria-live', 'polite');
     
-    const icon = type === 'success' ? 'fa-check-circle' 
-               : type === 'error' ? 'fa-times-circle' 
-               : type === 'warning' ? 'fa-exclamation-triangle' 
-               : 'fa-info-circle';
+    const icon = type === 'success' ? 'ri-checkbox-circle-line' 
+               : type === 'error' ? 'ri-close-circle-line' 
+               : type === 'warning' ? 'ri-alert-line' 
+               : 'ri-information-line';
                
-    t.innerHTML = `<i class="fas ${icon}" aria-hidden="true"></i><span>${msg}</span>`;
+    t.innerHTML = `<i class="${icon}" aria-hidden="true"></i><span>${msg}</span>`;
     container.appendChild(t);
     
     setTimeout(() => {
@@ -42,7 +42,7 @@ function showToast(msg, type = 'info') {
 function formatRelative(dateStr) {
     if (!dateStr) return '-';
     const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
-    if (diff < 60) return '<span style="color:var(--success);font-weight:700;">الآن</span>';
+    if (diff < 60) return '<span style="color:var(--color-primary);font-weight:700;">الآن</span>';
     if (diff < 3600) return `منذ ${Math.floor(diff / 60)} د`;
     if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} س`;
     return `منذ ${Math.floor(diff / 86400)} يوم`;
@@ -58,12 +58,12 @@ function formatDate(dateStr) {
 }
 
 function formatSubEnd(dateStr) {
-    if (!dateStr) return '<span class="badge badge-lifetime">♾️ مدى الحياة</span>';
+    if (!dateStr) return '<span class="badge badge-lifetime"><i class="ri-infinity-line"></i> مدى الحياة</span>';
     const now = new Date(), d = new Date(dateStr);
     const diff = d - now;
     if (diff < 0) return '<span class="badge badge-banned">منتهي</span>';
-    if (diff < 86400000) return `<span class="badge badge-expired">⚠️ ${formatDate(dateStr)}</span>`;
-    return `<span style="font-size:11px;color:var(--muted);">${formatDate(dateStr)}</span>`;
+    if (diff < 86400000) return `<span class="badge badge-expired"><i class="ri-time-line"></i> ${formatDate(dateStr)}</span>`;
+    return `<span style="font-size:12px;color:var(--color-text-secondary);">${formatDate(dateStr)}</span>`;
 }
 
 function formatMins(mins) {

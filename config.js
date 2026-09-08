@@ -1,5 +1,6 @@
 // ==========================================================================
-// 🦈 SHARK ADMIN DASHBOARD — CONFIGURATION
+// SHARK ADMIN DASHBOARD — CONFIGURATION
+// Centralized Supabase Configuration & Public Safe Credentials
 // ==========================================================================
 // SECURITY NOTICE:
 // Only the PUBLIC publishable anon key belongs here.

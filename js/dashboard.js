@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — DASHBOARD & OVERVIEW
+ * SHARK ADMIN DASHBOARD — DASHBOARD & OVERVIEW
  * Handles top-level KPI metrics, real-time system status banner, and quick action alert cards.
  */
 
@@ -38,16 +38,16 @@ async function loadDashboardData() {
         const banner = document.getElementById('systemStatusBanner');
         if (banner) {
             if (settings?.is_shutdown || settings?.bot_mode === 'shutdown') {
-                banner.innerHTML = '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span>حالة النظام: متوقف — البوت مغلق للصيانة أو الإيقاف التام!</span>';
+                banner.innerHTML = '<i class="ri-alert-line" aria-hidden="true"></i><span>حالة النظام: متوقف — البوت مغلق للصيانة أو الإيقاف التام</span>';
                 banner.className = 'status-banner offline';
             } else if (settings?.bot_mode === 'free') {
-                banner.innerHTML = '<i class="fas fa-gift" aria-hidden="true"></i><span>حالة النظام: البوت مجاني بالكامل لجميع المستخدمين حالياً!</span>';
+                banner.innerHTML = '<i class="ri-gift-line" aria-hidden="true"></i><span>حالة النظام: البوت مجاني بالكامل لجميع المستخدمين حالياً</span>';
                 banner.className = 'status-banner online';
             } else if (settings?.bot_mode === 'trial') {
-                banner.innerHTML = '<i class="fas fa-clock" aria-hidden="true"></i><span>حالة النظام: البوت يعمل بفترة تجريبية مجانية 24 ساعة للأجهزة الجديدة.</span>';
+                banner.innerHTML = '<i class="ri-time-line" aria-hidden="true"></i><span>حالة النظام: البوت يعمل بفترة تجريبية مجانية 24 ساعة للأجهزة الجديدة</span>';
                 banner.className = 'status-banner online';
             } else {
-                banner.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i><span>حالة النظام: متصل ويعمل لجميع المستخدمين المشتركين (وضع الأكواد).</span>';
+                banner.innerHTML = '<i class="ri-checkbox-circle-line" aria-hidden="true"></i><span>حالة النظام: متصل ويعمل لجميع المستخدمين المشتركين</span>';
                 banner.className = 'status-banner online';
             }
         }
@@ -120,9 +120,9 @@ function loadExpiryTable() {
     if (container) {
         if (!filtered.length) {
             container.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 36px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-md); color: var(--success);">
-                    <i class="fas fa-check-circle fa-2x" style="margin-bottom: 8px;"></i>
-                    <p style="font-weight: 600; font-size: 14px;">لا توجد اشتراكات تحتاج لتجديد عاجل حالياً</p>
+                <div style="grid-column: 1/-1; text-align: center; padding: 36px; background: var(--color-surface-card); border: 1px dashed var(--color-border-medium); border-radius: var(--radius-md); color: var(--color-primary);">
+                    <i class="ri-checkbox-circle-line" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
+                    <p style="font-weight: 600; font-size: 14px; margin: 0;">لا توجد اشتراكات تحتاج لتجديد عاجل حالياً</p>
                 </div>
             `;
         } else {
@@ -142,19 +142,19 @@ function loadExpiryTable() {
                 return `
                     <div class="expiry-card ${cardClass}">
                         <div class="expiry-card-top">
-                            <span class="expiry-card-title">📱 ${phoneName}</span>
+                            <span class="expiry-card-title"><i class="ri-smartphone-line"></i> ${phoneName}</span>
                             <span class="badge ${diff < 0 ? 'badge-banned' : diff < 86400000 * 3 ? 'badge-expired' : 'badge-active'}">
                                 ${diff < 0 ? 'منتهي' : 'قريب الانتهاء'}
                             </span>
                         </div>
                         <div class="expiry-card-dates">
-                            <div><i class="fas fa-calendar-times" style="margin-left:4px; opacity:0.7;"></i> الانتهاء: <b>${endDate}</b></div>
-                            <div><i class="fas fa-hourglass-half" style="margin-left:4px; opacity:0.7;"></i> المتبقي: ${remaining}</div>
+                            <div><i class="ri-calendar-line" style="margin-left:4px; opacity:0.7;"></i> الانتهاء: <b>${endDate}</b></div>
+                            <div><i class="ri-time-line" style="margin-left:4px; opacity:0.7;"></i> المتبقي: ${remaining}</div>
                         </div>
                         <div class="expiry-card-actions">
-                            <button class="btn-success" onclick="openRenewModal('${safeId}')" title="تجديد"><i class="fas fa-sync-alt"></i> تجديد</button>
-                            <button class="btn-secondary" onclick="openMsgModal('${safeId}')" title="رسالة"><i class="fas fa-comment-dots"></i> رسالة</button>
-                            <button class="btn-secondary" onclick="openUserProfile('${safeId}')" title="عرض التفاصيل"><i class="fas fa-info-circle"></i> عرض</button>
+                            <button class="btn-success" onclick="openRenewModal('${safeId}')" title="تجديد"><i class="ri-refresh-line"></i> تجديد</button>
+                            <button class="btn-secondary" onclick="openMsgModal('${safeId}')" title="رسالة"><i class="ri-chat-3-line"></i> رسالة</button>
+                            <button class="btn-secondary" onclick="openUserProfile('${safeId}')" title="عرض التفاصيل"><i class="ri-information-line"></i> عرض</button>
                         </div>
                     </div>
                 `;

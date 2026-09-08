@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — SCREENSHOTS & GALLERY
+ * SHARK ADMIN DASHBOARD — SCREENSHOTS & GALLERY
  * Handles on-demand remote screen capture polling and historical gallery inspection.
  */
 
@@ -30,7 +30,7 @@ async function openScreenshotModal(deviceId) {
         }).eq('device_id', deviceId);
 
         if (error) {
-            showToast('❌ خطأ في طلب الصورة: ' + (error.message || error), 'error');
+            showToast('خطأ في طلب الصورة: ' + (error.message || error), 'error');
             closeScreenshotModal();
             return;
         }
@@ -86,11 +86,11 @@ async function checkScreenshotStatus() {
                     img.src = displayUrl + '#t=' + Date.now();
                     img.style.display = 'block';
                 }
-                if (status) status.textContent = '✅ تم استلام الصورة بنجاح من الهاتف!';
-                showToast('✅ تم استلام لقطة الشاشة', 'success');
+                if (status) status.textContent = 'تم استلام الصورة بنجاح من الهاتف';
+                showToast('تم استلام لقطة الشاشة', 'success');
             } else {
-                if (status) status.textContent = '❌ فشل التقاط الصورة من الهاتف (ربما التطبيق مغلق).';
-                showToast('❌ تعذر التقاط الصورة من الهاتف', 'error');
+                if (status) status.textContent = 'فشل التقاط الصورة من الهاتف (ربما التطبيق مغلق)';
+                showToast('تعذر التقاط الصورة من الهاتف', 'error');
             }
         }
     } catch (err) {
@@ -176,16 +176,16 @@ async function deleteScreenshot(fileName) {
     try {
         const { error } = await window.sb.storage.from('screenshots').remove([fileName]);
         if (error) throw error;
-        showToast('✅ تم حذف الصورة بنجاح', 'success');
+        showToast('تم حذف الصورة بنجاح', 'success');
         loadGallery();
     } catch (err) {
-        showToast('❌ خطأ في حذف الصورة', 'error');
+        showToast('خطأ في حذف الصورة', 'error');
     }
 }
 
 async function deleteAllScreenshots() {
     if (!currentGalleryDeviceId) return;
-    if (!confirm('⚠️ تحذير: هل أنت متأكد من حذف جميع صور هذا الجهاز نهائياً؟ لا يمكن التراجع!')) return;
+    if (!confirm('تحذير: هل أنت متأكد من حذف جميع صور هذا الجهاز نهائياً؟ لا يمكن التراجع!')) return;
 
     const status = document.getElementById('galleryStatus');
     if (status) status.textContent = 'جاري الحذف...';
@@ -195,13 +195,13 @@ async function deleteAllScreenshots() {
         if (data && data.length > 0) {
             const filesToRemove = data.map(f => f.name);
             await window.sb.storage.from('screenshots').remove(filesToRemove);
-            showToast(`✅ تم حذف ${filesToRemove.length} صورة بنجاح`, 'success');
+            showToast(`تم حذف ${filesToRemove.length} صورة بنجاح`, 'success');
             loadGallery();
         } else {
             showToast('لا توجد صور للحذف', 'info');
         }
     } catch (err) {
-        showToast('❌ خطأ في الحذف الجماعي', 'error');
+        showToast('خطأ في الحذف الجماعي', 'error');
     }
 }
 

@@ -1,81 +1,119 @@
 /* ════════════════════════════════════════════════════
-   🦈 SHARK DESIGN SYSTEM — TOKENS & FOUNDATIONS
+   SHARK BOT ADMIN — DESIGN SYSTEM TOKENS (KAFR SAKR THEME)
    ════════════════════════════════════════════════════ */
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/cairo/index.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/index.css');
 
 :root {
-    --neon:        #00f3ff;
-    --neon-glow:   rgba(0, 243, 255, 0.35);
-    --neon2:       #3b82f6;
-    --neon2-glow:  rgba(59, 130, 246, 0.35);
-    --bg:          #0a0f18;
-    --bg2:         #0f172a;
-    --bg3:         #1e293b;
-    --surface:     #162032;
-    --border:      rgba(0, 243, 255, 0.12);
-    --border-subtle: rgba(255, 255, 255, 0.05);
-    --text:        #e2e8f0;
-    --muted:       #64748b;
-    --success:     #22c55e;
-    --danger:      #ef4444;
-    --warning:     #f59e0b;
-    --primary:     #3b82f6;
-    --radius-sm:   8px;
-    --radius-md:   12px;
-    --radius-lg:   16px;
-    --radius-xl:   24px;
-    --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.4);
-    --shadow-modal: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 243, 255, 0.05);
+  /* Colors — Sovereign Kafr Sakr Palette */
+  --color-primary:          #10B981;
+  --color-primary-hover:    #059669;
+  --color-primary-active:   #047857;
+
+  --color-surface-base:     #0B0F17;
+  --color-surface-card:     #111827;
+  --color-surface-card-alt: #161F30;
+  --color-surface-elevated: #1E293B;
+  --color-surface-overlay:  rgba(11, 15, 23, 0.85);
+
+  --color-border-subtle:    rgba(148, 163, 184, 0.12);
+  --color-border-medium:    rgba(148, 163, 184, 0.22);
+  --color-border-focus:     #10B981;
+
+  --color-text-primary:     #F8FAFC;
+  --color-text-secondary:   #94A3B8;
+  --color-text-muted:       #64748B;
+  --color-text-inverse:     #0F172A;
+
+  --color-status-success:   #10B981;
+  --color-status-danger:    #EF4444;
+  --color-status-warning:   #F59E0B;
+  --color-status-info:      #38BDF8;
+  --color-status-purple:    #A855F7;
+
+  /* Aliases for full backward compatibility */
+  --bg:          var(--color-surface-base);
+  --bg2:         var(--color-surface-card);
+  --bg3:         var(--color-surface-card-alt);
+  --surface:     var(--color-surface-elevated);
+  --border:      var(--color-border-subtle);
+  --border2:     var(--color-border-medium);
+  --border-subtle: var(--color-border-subtle);
+  --text:        var(--color-text-primary);
+  --text2:       var(--color-text-secondary);
+  --muted:       var(--color-text-muted);
+  --primary:     var(--color-primary);
+  --success:     var(--color-status-success);
+  --danger:      var(--color-status-danger);
+  --warning:     var(--color-status-warning);
+  --info:        var(--color-status-info);
+  --neon:        var(--color-primary);
+  --neon2:       #38BDF8;
+
+  /* Spacing */
+  --space-2xs:  2px;
+  --space-xs:   4px;
+  --space-sm:   8px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+
+  /* Border radius */
+  --radius-xs:  4px;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-pill: 9999px;
+
+  /* Typography */
+  --font-family-base: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 4px rgba(0, 0, 0, 0.25);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg:  0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-card: var(--shadow-md);
+  --shadow-modal: 0 25px 60px rgba(0, 0, 0, 0.8);
+
+  /* Layout & Mobile */
+  --header-height:       54px;
+  --bottom-nav-height:   64px;
+  --safe-area-bottom:    env(safe-area-inset-bottom, 0px);
+  --total-bottom-offset: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html, body {
-    height: 100%;
-    font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    overflow-x: hidden;
-    line-height: 1.5;
+  height: 100%;
+  font-family: var(--font-family-base);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── SCROLLBAR ── */
+/* Scrollbar */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: var(--bg);
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-    background: var(--bg3);
-    border-radius: 3px;
+  background: var(--bg3);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--neon2);
-}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.35; transform: scale(0.92); }
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  background: var(--color-primary);
 }

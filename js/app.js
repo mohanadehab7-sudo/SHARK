@@ -1,5 +1,5 @@
 /**
- * 🦈 SHARK ADMIN DASHBOARD — MAIN APPLICATION BOOTSTRAP
+ * SHARK ADMIN DASHBOARD — MAIN APPLICATION BOOTSTRAP
  * Coordinates module initialization, lifecycle hooks, and global event bindings.
  */
 
