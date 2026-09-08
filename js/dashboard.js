@@ -58,19 +58,6 @@ async function loadDashboardData() {
     }
 }
 
-function loadExpiryTable() {
-    // Expiry alerts merged into unified subscribers list
-}
-
-function quickBroadcastMsg() {
-    if (window.openMsgModal) {
-        window.openMsgModal('__GLOBAL__');
-        const titleEl = document.getElementById('msgModalTitle');
-        if (titleEl) titleEl.innerHTML = '<i class="ri-broadcast-line" aria-hidden="true"></i> إرسال إشعار عام لجميع الهواتف';
-    }
-}
-window.quickBroadcastMsg = quickBroadcastMsg;
-
 function filterFromStat(type) {
     if (type === 'codes') {
         const codesTabBtn = document.getElementById('tab-codes');
@@ -91,10 +78,7 @@ function filterFromStat(type) {
 }
 window.filterFromStat = filterFromStat;
 
-window.loadExpiryTable = loadExpiryTable;
 window.SHARK.dashboard = {
     loadDashboardData,
-    loadExpiryTable,
-    quickBroadcastMsg,
     filterFromStat
 };

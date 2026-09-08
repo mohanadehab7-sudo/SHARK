@@ -149,15 +149,6 @@
     background: var(--color-primary-hover);
 }
 
-.login-footer {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 11px;
-    color: var(--color-text-muted);
-    letter-spacing: 1px;
-    font-family: var(--font-family-mono);
-}
-
 /* ════════════════ MAIN APP LAYOUT ════════════════ */
 .main-app {
     display: flex;

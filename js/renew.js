@@ -27,14 +27,15 @@ function openRenewModal(deviceId) {
     const phoneName = safeName || `هاتف (${safeId.substring(0, 8)})`;
 
     if (nameEl) {
-        if (lic?.expires_at) {
+        const isLifetime = lic && (!lic.expires_at || lic.duration_days >= 36500 || (lic.expires_at && lic.expires_at.startsWith('2099-01-01')));
+        if (isLifetime) {
+            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;"><i class="ri-infinity-line"></i> مدى الحياة حالياً</span>`;
+        } else if (lic?.expires_at) {
             const diff = new Date(lic.expires_at) - new Date();
             const daysLeft = Math.ceil(diff / 86400000);
             nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp;
                 ينتهي: <b style="color:${diff < 0 ? 'var(--color-status-danger)' : 'var(--color-text-primary)'}">${formatDate(lic.expires_at)}</b>
                 <span style="color:var(--color-text-muted);font-size:11px;">${diff > 0 ? `(${daysLeft} يوم متبقي)` : '(منتهي)'}</span>`;
-        } else if (lic && !lic.expires_at) {
-            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;"><i class="ri-infinity-line"></i> مدى الحياة حالياً</span>`;
         } else {
             nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:var(--color-text-muted);">لا يوجد اشتراك</span>`;
         }
@@ -85,20 +86,24 @@ function initRenewModal() {
     document.getElementById('renewCustomUnit')?.addEventListener('change', onRenewCustomChange);
 
     // Custom date picker
-    document.getElementById('renewCustomDatePicker')?.addEventListener('change', () => {
-        const val = document.getElementById('renewCustomDatePicker').value;
-        if (!val) return;
-        document.querySelectorAll('.renew-preset-btn').forEach(b => b.classList.remove('active'));
-        const cv = document.getElementById('renewCustomValue');
-        if (cv) cv.value = '';
+    const datePicker = document.getElementById('renewCustomDatePicker');
+    if (datePicker) {
+        datePicker.min = new Date().toISOString().split('T')[0];
+        datePicker.addEventListener('change', () => {
+            const val = datePicker.value;
+            if (!val) return;
+            document.querySelectorAll('.renew-preset-btn').forEach(b => b.classList.remove('active'));
+            const cv = document.getElementById('renewCustomValue');
+            if (cv) cv.value = '';
 
-        const renewState = window.SHARK.state.renewState;
-        renewState.isLifetime       = false;
-        renewState.days             = null;
-        renewState.customHours      = null;
-        renewState.customExpiryDate = val;
-        updateRenewInfo();
-    });
+            const renewState = window.SHARK.state.renewState;
+            renewState.isLifetime       = false;
+            renewState.days             = null;
+            renewState.customHours      = null;
+            renewState.customExpiryDate = val;
+            updateRenewInfo();
+        });
+    }
 }
 
 function onRenewCustomChange() {
@@ -211,7 +216,6 @@ async function confirmRenew() {
             window.SHARK.users?.loadUsersData(),
             window.SHARK.dashboard?.loadDashboardData()
         ]);
-        window.SHARK.dashboard?.loadExpiryTable();
     } catch (err) {
         console.error("Renewal failure:", err);
         showToast('خطأ في التجديد: ' + err.message, 'error');
@@ -243,7 +247,6 @@ async function revokeDeviceLicense(deviceId) {
             window.SHARK.users?.loadUsersData(),
             window.SHARK.dashboard?.loadDashboardData()
         ]);
-        window.SHARK.dashboard?.loadExpiryTable();
     } catch (err) {
         showToast('خطأ في إلغاء الاشتراك: ' + err.message, 'error');
     } finally {

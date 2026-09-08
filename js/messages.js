@@ -35,32 +35,9 @@ async function confirmSendMessage() {
 
     showLoading(true);
     try {
-        if (pendingMsgDeviceId === '__BULK__' || pendingMsgDeviceId === '__GLOBAL__') {
-            const rows = document.querySelectorAll('#usersTableBody tr');
-            let ids = [...rows].map(row => {
-                const btn = row.querySelector('[onclick*="openUserProfile"]');
-                return btn?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-            }).filter(Boolean);
-
-            if (ids.length === 0 && window.SHARK.state.usersData?.length) {
-                ids = window.SHARK.state.usersData.map(u => u.device_id).filter(Boolean);
-            }
-
-            if (ids.length === 0) {
-                showToast('لا يوجد مستخدمون محددون لإرسال الرسالة لهم', 'warning');
-                showLoading(false);
-                return;
-            }
-
-            for (const id of ids) {
-                await window.sb.from('devices').update({ message: msg }).eq('device_id', id);
-            }
-            showToast(`تم إرسال الرسالة إلى ${ids.length} جهاز بنجاح`, 'success');
-        } else {
-            const { error } = await window.sb.from('devices').update({ message: msg }).eq('device_id', pendingMsgDeviceId);
-            if (error) throw error;
-            showToast('تم إرسال الرسالة للجهاز بنجاح', 'success');
-        }
+        const { error } = await window.sb.from('devices').update({ message: msg }).eq('device_id', pendingMsgDeviceId);
+        if (error) throw error;
+        showToast('تم إرسال الرسالة للجهاز بنجاح', 'success');
     } catch (err) {
         console.error("Message send failed:", err);
         showToast('خطأ في إرسال الرسالة: ' + (err.message || err), 'error');

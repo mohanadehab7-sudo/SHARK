@@ -198,7 +198,6 @@ async function quickGenerateCode(days, label) {
     }
 }
 window.quickGenerateCode = quickGenerateCode;
-window.quickGenerate30Days = () => quickGenerateCode(30, 'شهر');
 
 // ── Quick Code Generation Modal Handlers ─────────────────────────────────────
 function openQuickCodeModal() {

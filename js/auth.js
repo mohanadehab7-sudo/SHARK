@@ -89,14 +89,9 @@ function initAuth() {
 function showMainApp() {
     const loginScreen = document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
-    const welcomeUser = document.getElementById('welcomeUser');
 
     if (loginScreen) loginScreen.style.display = 'none';
     if (mainApp) mainApp.style.display = 'flex';
-
-    const currentUser = window.SHARK.state.currentUser;
-    const name = currentUser?.email?.split('@')[0] || 'المدير';
-    if (welcomeUser) welcomeUser.textContent = `مرحباً، ${name}`;
 
     // Load entire dashboard data
     if (window.SHARK.loadAllData) {

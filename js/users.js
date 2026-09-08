@@ -259,8 +259,12 @@ function openUserProfile(deviceId) {
     const licenseKeyEl = document.getElementById('modalLicenseKey');
 
     if (lic) {
-        if (!lic.expires_at) {
-            if (subEndEl) subEndEl.textContent = 'مدى الحياة';
+        const isLifetime = !lic.expires_at || lic.duration_days >= 36500 || (lic.expires_at && lic.expires_at.startsWith('2099-01-01'));
+        if (isLifetime) {
+            if (subEndEl) {
+                subEndEl.textContent = 'مدى الحياة';
+                subEndEl.style.color = 'var(--color-primary)';
+            }
             if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-lifetime">لا ينتهي</span>';
         } else {
             const diff = new Date(lic.expires_at) - new Date();
@@ -450,8 +454,8 @@ async function unblockUser(deviceId) {
 async function deleteUser(deviceId) {
     showLoading(true);
     try {
-        // Unlink any license associated with this device first
-        await window.sb.from('licenses').update({ device_id: null }).eq('device_id', deviceId);
+        // Unlink any license associated with this device first and reset its state
+        await window.sb.from('licenses').update({ device_id: null, expires_at: null, status: 'active' }).eq('device_id', deviceId);
         const { error } = await window.sb.from('devices').delete().eq('device_id', deviceId);
         if (error) throw error;
         showToast('تم حذف الجهاز نهائياً بنجاح', 'success');
