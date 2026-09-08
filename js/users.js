@@ -1,12 +1,11 @@
 /**
  * 🦈 SHARK ADMIN DASHBOARD — USERS & DEVICES
- * Handles device listings, sorting, search, status filtering, actions drawer, and details modal.
+ * Handles device listings, search, status filtering, and the unified user management sheet.
  */
 
 window.SHARK = window.SHARK || {};
 
-let actionsDeviceId = null;
-let detailsCurrentDeviceId = null;
+let currentModalDeviceId = null;
 
 async function loadUsersData() {
     try {
@@ -109,17 +108,24 @@ function applyUserFilter() {
 
 function displayUsers(users) {
     const tbody = document.getElementById('usersTableBody');
-    if (!tbody) return;
+    const cardsContainer = document.getElementById('usersCardsContainer');
+    if (!tbody && !cardsContainer) return;
 
     if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="loading-cell"><i class="fas fa-inbox"></i> لا يوجد مستخدمون</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="loading-cell"><i class="fas fa-inbox"></i> لا يوجد مستخدمون مسجلون</td></tr>';
+        if (cardsContainer) cardsContainer.innerHTML = '<div style="text-align:center; padding:36px; color:var(--muted);"><i class="fas fa-inbox fa-2x" style="margin-bottom:8px;"></i><p>لا يوجد مستخدمون مسجلون</p></div>';
         return;
     }
 
     const codesData = window.SHARK.state.codesData || [];
     const settingsData = window.SHARK.state.settingsData;
+    const mode = settingsData?.bot_mode || 'subscription';
 
-    tbody.innerHTML = users.map((u, i) => {
+    // Process user rows & cards data
+    const rowsHtml = [];
+    const cardsHtml = [];
+
+    users.forEach((u, i) => {
         const lic = codesData.find(c => c.device_id === u.device_id && c.status !== 'suspended');
         const isOnline = u.last_seen && (new Date() - new Date(u.last_seen)) < 300000;
         const onlineDot = isOnline 
@@ -132,8 +138,6 @@ function displayUsers(users) {
         let subEnd = '<span class="badge badge-expired">بدون ترخيص</span>';
         let remainingCell = '<span style="color:var(--muted);font-size:11px;">—</span>';
 
-        const mode = settingsData?.bot_mode || 'subscription';
-
         if (lic) {
             if (!lic.expires_at) {
                 subEnd = '<span class="badge badge-lifetime">♾️ مدى الحياة</span>';
@@ -143,15 +147,15 @@ function displayUsers(users) {
                 remainingCell = formatRemainingDays(lic.expires_at);
             }
         } else if (mode === 'free') {
-            subEnd = '—';
-            remainingCell = '—';
+            subEnd = '<span style="color:#34d399;">🎁 مجاني</span>';
+            remainingCell = '<span style="color:#34d399;">♾️</span>';
         } else if (mode === 'trial') {
             const created = u.created_at ? new Date(u.created_at) : new Date();
             const trialEnd = new Date(created.getTime() + 24 * 3600000);
             const msLeft = trialEnd - new Date();
             const hoursLeft = msLeft / 3600000;
             if (hoursLeft > 0) {
-                subEnd = `<span class="badge badge-active" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.4);"><i class="fas fa-clock" style="margin-left:4px;"></i>تجربة نشطة (${hoursLeft.toFixed(1)}س)</span>`;
+                subEnd = `<span class="badge badge-active" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.4);"><i class="fas fa-clock" style="margin-left:4px;"></i>تجربة (${hoursLeft.toFixed(1)}س)</span>`;
                 remainingCell = `<span style="color:#60a5fa;font-weight:700;font-size:11px;">${hoursLeft.toFixed(1)}س</span>`;
             } else {
                 subEnd = '<span class="badge badge-expired"><i class="fas fa-hourglass-end" style="margin-left:4px;"></i>انتهت التجربة</span>';
@@ -164,15 +168,16 @@ function displayUsers(users) {
 
         const safeName = escapeHtml(u.device_name || 'غير معروف');
         const safeId = escapeHtml(u.device_id);
-        const safeIdShort = safeId.substring(0, 12);
+        const safeIdShort = safeId.substring(0, 10);
         const deviceDisplay = safeName !== 'غير معروف' ? safeName : `هاتف (${safeId.substring(0, 8)})`;
 
-        return `<tr>
+        // Desktop Table Row
+        rowsHtml.push(`<tr>
             <td style="text-align:center;">${onlineDot}</td>
             <td style="font-size:12px;font-weight:700;color:var(--neon);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${safeName}">
                 📱 ${deviceDisplay}
             </td>
-            <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل: ${safeId}">
+            <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل">
                 ${safeIdShort}... <i class="far fa-copy" style="font-size:9px;margin-left:2px;"></i>
             </td>
             <td>${formatRelative(u.last_seen)}</td>
@@ -182,13 +187,268 @@ function displayUsers(users) {
             <td><span class="badge" style="background:rgba(67,56,202,0.1);color:#a5b4fc;border:1px solid rgba(67,56,202,0.3);">${formatMins(u.total_minutes || 0)}</span></td>
             <td>${statusBadge}</td>
             <td style="white-space:nowrap;">
-                <button class="table-btn" style="color:var(--neon);background:rgba(0,243,255,0.1);border:1px solid rgba(0,243,255,0.2);width:36px;" onclick="openActionsCard('${safeId}')" title="الإجراءات"><i class="fas fa-ellipsis-v"></i></button>
+                <button class="table-btn details-btn" onclick="openUserProfile('${safeId}')" title="إدارة الجهاز">
+                    <i class="fas fa-sliders-h"></i> <span>إدارة</span>
+                </button>
             </td>
-        </tr>`;
-    }).join('');
+        </tr>`);
+
+        // Mobile Touch Card
+        cardsHtml.push(`
+            <div class="user-mobile-card" onclick="openUserProfile('${safeId}')">
+                <div class="user-card-header">
+                    <div class="user-card-title-group">
+                        ${onlineDot}
+                        <span class="user-card-title">📱 ${deviceDisplay}</span>
+                    </div>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        ${statusBadge}
+                    </div>
+                </div>
+                <div class="user-card-meta">
+                    <div class="user-meta-item">
+                        <span class="meta-label">الاشتراك:</span>
+                        <span>${subEnd}</span>
+                    </div>
+                    <div class="user-meta-item">
+                        <span class="meta-label">المتبقي:</span>
+                        <span>${remainingCell}</span>
+                    </div>
+                    <div class="user-meta-item">
+                        <span class="meta-label">المغلفات:</span>
+                        <span style="color:#f0abfc;font-weight:700;">${u.total_runs || 0}</span>
+                    </div>
+                    <div class="user-meta-item">
+                        <span class="meta-label">التشغيل:</span>
+                        <span style="color:#a5b4fc;font-weight:700;">${formatMins(u.total_minutes || 0)}</span>
+                    </div>
+                </div>
+                <div class="user-card-footer">
+                    <span class="user-card-id"><i class="fas fa-fingerprint"></i> ${safeIdShort}...</span>
+                    <button class="user-card-action-btn" onclick="event.stopPropagation(); openUserProfile('${safeId}');">
+                        <i class="fas fa-sliders-h"></i> التحكم بالجهاز
+                    </button>
+                </div>
+            </div>
+        `);
+    });
+
+    if (tbody) tbody.innerHTML = rowsHtml.join('');
+    if (cardsContainer) cardsContainer.innerHTML = cardsHtml.join('');
 }
 
-// ── USER ACTIONS ──────────────────────────────────────────────────────────
+// ── UNIFIED USER PROFILE & CONTROL SHEET ───────────────────────────────────
+
+function openUserProfile(deviceId) {
+    currentModalDeviceId = deviceId;
+    window.actionsDeviceId = deviceId;
+
+    const usersData = window.SHARK.state.usersData || [];
+    const codesData = window.SHARK.state.codesData || [];
+    const settingsData = window.SHARK.state.settingsData;
+
+    const user = usersData.find(u => u.device_id === deviceId);
+    const lic  = codesData.find(c => c.device_id === deviceId);
+    const mode = settingsData?.bot_mode || 'subscription';
+
+    // Header Info
+    const phoneName = user?.device_name || `هاتف (${deviceId?.substring(0, 8)})`;
+    const phoneNameEl = document.getElementById('modalPhoneName');
+    if (phoneNameEl) phoneNameEl.textContent = '📱 ' + phoneName;
+
+    const isOnline = user?.last_seen && (new Date() - new Date(user.last_seen)) < 300000;
+    const onlineBadge = document.getElementById('modalOnlineBadge');
+    if (onlineBadge) {
+        onlineBadge.textContent = isOnline ? 'متصل الآن' : 'غير متصل';
+        onlineBadge.className = isOnline ? 'badge badge-active' : 'badge';
+        onlineBadge.style.background = isOnline ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)';
+        onlineBadge.style.color = isOnline ? '#4ade80' : 'var(--muted)';
+    }
+
+    const statusBadge = document.getElementById('modalStatusBadge');
+    if (statusBadge) {
+        const isBanned = user?.status === 'banned';
+        statusBadge.textContent = isBanned ? 'محظور' : 'نشط';
+        statusBadge.className = isBanned ? 'badge badge-banned' : 'badge badge-active';
+    }
+
+    // Subscription & Expiry
+    const subEndEl = document.getElementById('modalSubEnd');
+    const remainingEl = document.getElementById('modalRemaining');
+    const licenseKeyEl = document.getElementById('modalLicenseKey');
+
+    if (lic) {
+        if (!lic.expires_at) {
+            if (subEndEl) subEndEl.textContent = '♾️ مدى الحياة';
+            if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-lifetime">♾️ لا ينتهي</span>';
+        } else {
+            const diff = new Date(lic.expires_at) - new Date();
+            if (subEndEl) {
+                subEndEl.textContent = formatDate(lic.expires_at);
+                subEndEl.style.color = diff < 0 ? 'var(--danger)' : diff < 86400000 * 3 ? 'var(--warning)' : 'var(--text)';
+            }
+            if (remainingEl) remainingEl.innerHTML = formatRemainingDays(lic.expires_at);
+        }
+        if (licenseKeyEl) {
+            licenseKeyEl.textContent = lic.license_key;
+            licenseKeyEl.style.cursor = 'pointer';
+            licenseKeyEl.title = 'اضغط لنسخ الكود';
+        }
+    } else if (mode === 'trial') {
+        const created = user?.created_at ? new Date(user.created_at) : new Date();
+        const trialEnd = new Date(created.getTime() + 24 * 3600000);
+        const diff = trialEnd - new Date();
+        if (subEndEl) {
+            subEndEl.textContent = formatDate(trialEnd.toISOString()) + ' (تجربة)';
+            subEndEl.style.color = diff < 0 ? 'var(--danger)' : '#60a5fa';
+        }
+        if (remainingEl) remainingEl.innerHTML = formatRemainingDays(trialEnd.toISOString());
+        if (licenseKeyEl) {
+            licenseKeyEl.textContent = '— تجربة مجانية —';
+            licenseKeyEl.style.cursor = 'default';
+        }
+    } else if (mode === 'free') {
+        if (subEndEl) subEndEl.textContent = '🎁 وضع مجاني بالكامل';
+        if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-active">لا ينتهي</span>';
+        if (licenseKeyEl) {
+            licenseKeyEl.textContent = '— وضع مجاني —';
+            licenseKeyEl.style.cursor = 'default';
+        }
+    } else {
+        if (subEndEl) subEndEl.textContent = 'بدون ترخيص';
+        if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-expired">لا يوجد</span>';
+        if (licenseKeyEl) {
+            licenseKeyEl.textContent = '—';
+            licenseKeyEl.style.cursor = 'default';
+        }
+    }
+
+    // Telemetry Stats
+    const totalRunsEl = document.getElementById('modalTotalRuns');
+    const totalMinsEl = document.getElementById('modalTotalMins');
+    if (totalRunsEl) totalRunsEl.textContent = user?.total_runs || 0;
+    if (totalMinsEl) totalMinsEl.textContent = formatMins(user?.total_minutes || 0);
+
+    // Device ID
+    const devIdEl = document.getElementById('modalDeviceId');
+    if (devIdEl) devIdEl.textContent = deviceId || '—';
+
+    // Block Button Text
+    const blockBtn = document.getElementById('modalBlockBtn');
+    const blockLabel = document.getElementById('modalBlockLabel');
+    if (blockBtn && blockLabel) {
+        if (user?.status === 'banned') {
+            blockBtn.className = 'action-card-btn success';
+            blockLabel.textContent = 'رفع الحظر';
+            blockBtn.querySelector('i').className = 'fas fa-check';
+        } else {
+            blockBtn.className = 'action-card-btn danger-soft';
+            blockLabel.textContent = 'حظر الجهاز';
+            blockBtn.querySelector('i').className = 'fas fa-ban';
+        }
+    }
+
+    // Reset Delete Confirm
+    hideDeleteConfirm();
+
+    const modal = document.getElementById('unifiedUserModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeUserProfile() {
+    const modal = document.getElementById('unifiedUserModal');
+    if (modal) modal.style.display = 'none';
+    currentModalDeviceId = null;
+    window.actionsDeviceId = null;
+}
+
+function copyModalCode() {
+    const code = document.getElementById('modalLicenseKey')?.textContent;
+    if (code && code !== '—' && !code.includes('مجاني')) {
+        navigator.clipboard.writeText(code);
+        showToast('✅ تم نسخ كود التفعيل', 'success');
+    }
+}
+
+function copyModalDeviceId() {
+    if (currentModalDeviceId) {
+        navigator.clipboard.writeText(currentModalDeviceId);
+        showToast('✅ تم نسخ معرف الجهاز (Device ID)', 'success');
+    }
+}
+
+function renewFromModal() {
+    if (!currentModalDeviceId) return;
+    const id = currentModalDeviceId;
+    closeUserProfile();
+    if (window.openRenewModal) window.openRenewModal(id);
+}
+
+function messageFromModal() {
+    if (!currentModalDeviceId) return;
+    const id = currentModalDeviceId;
+    closeUserProfile();
+    if (window.openMsgModal) window.openMsgModal(id);
+}
+
+function screenshotFromModal() {
+    if (!currentModalDeviceId) return;
+    const id = currentModalDeviceId;
+    closeUserProfile();
+    if (window.openScreenshotModal) window.openScreenshotModal(id);
+}
+
+function galleryFromModal() {
+    if (!currentModalDeviceId) return;
+    const id = currentModalDeviceId;
+    closeUserProfile();
+    if (window.openGalleryModal) window.openGalleryModal(id);
+}
+
+async function toggleBlockFromModal() {
+    if (!currentModalDeviceId) return;
+    const user = window.SHARK.state.usersData?.find(u => u.device_id === currentModalDeviceId);
+    if (user?.status === 'banned') {
+        await unblockUser(currentModalDeviceId);
+    } else {
+        await blockUser(currentModalDeviceId);
+    }
+    openUserProfile(currentModalDeviceId);
+}
+
+async function revokeFromModal() {
+    if (!currentModalDeviceId) return;
+    const user = window.SHARK.state.usersData?.find(u => u.device_id === currentModalDeviceId);
+    const name = user?.device_name || `هاتف (${currentModalDeviceId.substring(0, 8)})`;
+    if (!confirm(`هل تريد إلغاء كود التفعيل المربوط بجهاز "${name}"؟ سيصبح الكود متاحاً مجدداً.`)) return;
+    if (window.revokeDeviceLicense) {
+        await window.revokeDeviceLicense(currentModalDeviceId);
+    }
+    closeUserProfile();
+}
+
+function showDeleteConfirm() {
+    const confirmBox = document.getElementById('modalDeleteConfirm');
+    const deleteBtn = document.getElementById('modalDeleteBtn');
+    if (confirmBox) confirmBox.style.display = 'block';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+}
+
+function hideDeleteConfirm() {
+    const confirmBox = document.getElementById('modalDeleteConfirm');
+    const deleteBtn = document.getElementById('modalDeleteBtn');
+    if (confirmBox) confirmBox.style.display = 'none';
+    if (deleteBtn) deleteBtn.style.display = 'flex';
+}
+
+async function deleteUserFromModal() {
+    if (!currentModalDeviceId) return;
+    const id = currentModalDeviceId;
+    closeUserProfile();
+    await deleteUser(id);
+}
+
+// ── USER CRUD ACTIONS ─────────────────────────────────────────────────────
 
 async function blockUser(deviceId) {
     const banMsg = "🚫 تم حظر جهازك من استخدام البوت! يرجى التواصل مع الإدارة للمزيد من التفاصيل.";
@@ -206,243 +466,13 @@ async function unblockUser(deviceId) {
 }
 
 async function deleteUser(deviceId) {
-    if (!confirm('هل أنت متأكد من حذف المستخدم نهائياً؟ لا يمكن التراجع!')) return;
     await window.sb.from('devices').delete().eq('device_id', deviceId);
     showToast('✅ تم حذف الجهاز نهائياً', 'success');
     await loadUsersData();
     window.SHARK.dashboard?.loadDashboardData();
 }
 
-// ── ACTIONS CARD DRAWER ───────────────────────────────────────────────────
-
-function openActionsCard(deviceId) {
-    actionsDeviceId = deviceId;
-    window.actionsDeviceId = deviceId;
-
-    const usersData = window.SHARK.state.usersData || [];
-    const codesData = window.SHARK.state.codesData || [];
-    const settingsData = window.SHARK.state.settingsData;
-
-    const user = usersData.find(u => u.device_id === deviceId);
-    const lic  = codesData.find(c => c.device_id === deviceId);
-    const mode = settingsData?.bot_mode || 'subscription';
-
-    const phoneName = user?.device_name || `هاتف (${deviceId?.substring(0, 8)})`;
-    const phoneNameEl = document.getElementById('actionsPhoneName');
-    if (phoneNameEl) phoneNameEl.textContent = '📱 ' + phoneName;
-
-    const statusEl = document.getElementById('actionsStatusBadge');
-    if (statusEl) {
-        if (user?.status === 'banned') {
-            statusEl.textContent = 'محظور';
-            statusEl.className = 'badge badge-banned';
-        } else {
-            statusEl.textContent = 'نشط';
-            statusEl.className = 'badge badge-active';
-        }
-    }
-
-    const blockBtn   = document.getElementById('actionsBlockBtn');
-    const blockLabel = document.getElementById('actionsBlockLabel');
-    if (blockBtn && blockLabel) {
-        if (user?.status === 'banned') {
-            blockBtn.className = 'action-card-btn success';
-            blockLabel.textContent = 'رفع الحظر';
-            blockBtn.querySelector('i').className = 'fas fa-check';
-        } else {
-            blockBtn.className = 'action-card-btn danger-soft';
-            blockLabel.textContent = 'حظر';
-            blockBtn.querySelector('i').className = 'fas fa-ban';
-        }
-    }
-
-    const subEndEl    = document.getElementById('actionsSubEnd');
-    const remainingEl = document.getElementById('actionsRemaining');
-
-    if (subEndEl && remainingEl) {
-        if (lic?.expires_at) {
-            subEndEl.textContent  = formatDate(lic.expires_at);
-            remainingEl.innerHTML = formatRemainingDays(lic.expires_at);
-        } else if (lic && !lic.expires_at) {
-            subEndEl.innerHTML  = '<span class="badge badge-lifetime" style="font-size:10px;">♾️ مدى الحياة</span>';
-            remainingEl.innerHTML = '<span style="color:#60a5fa;">♾️</span>';
-        } else if (mode === 'trial') {
-            const created  = user?.created_at ? new Date(user.created_at) : new Date();
-            const trialEnd = new Date(created.getTime() + 24 * 3600000);
-            const hoursLeft = (trialEnd - new Date()) / 3600000;
-            subEndEl.textContent  = formatDate(trialEnd.toISOString()) + ' (تجربة)';
-            remainingEl.innerHTML = hoursLeft > 0
-                ? `<span style="color:#60a5fa;font-weight:700;">${hoursLeft.toFixed(1)}س</span>`
-                : '<span style="color:var(--danger);">منتهي</span>';
-        } else if (mode === 'free') {
-            subEndEl.innerHTML  = '<span style="color:#34d399;">🎁 مجاني</span>';
-            remainingEl.innerHTML = '<span style="color:#34d399;">♾️</span>';
-        } else {
-            subEndEl.innerHTML  = '<span style="color:var(--muted);">بدون ترخيص</span>';
-            remainingEl.innerHTML = '—';
-        }
-    }
-
-    const deleteConfirm = document.getElementById('actionsDeleteConfirm');
-    const deleteBtn     = document.getElementById('actionsDeleteBtn');
-    if (deleteConfirm) deleteConfirm.style.display = 'none';
-    if (deleteBtn)     deleteBtn.style.display     = 'flex';
-
-    const modal = document.getElementById('actionsModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeActionsCard() {
-    const modal = document.getElementById('actionsModal');
-    if (modal) modal.style.display = 'none';
-    actionsDeviceId = null;
-    window.actionsDeviceId = null;
-}
-
-async function actionsToggleBlock() {
-    if (!actionsDeviceId) return;
-    const usersData = window.SHARK.state.usersData || [];
-    const user = usersData.find(u => u.device_id === actionsDeviceId);
-    if (user?.status === 'banned') {
-        await unblockUser(actionsDeviceId);
-    } else {
-        await blockUser(actionsDeviceId);
-    }
-    closeActionsCard();
-}
-
-// ── USER DETAILS MODAL ────────────────────────────────────────────────────
-
-function openUserDetailsModal(deviceId) {
-    detailsCurrentDeviceId = deviceId;
-    const usersData = window.SHARK.state.usersData || [];
-    const codesData = window.SHARK.state.codesData || [];
-    const settingsData = window.SHARK.state.settingsData;
-
-    const user = usersData.find(u => u.device_id === deviceId);
-    const lic  = codesData.find(c => c.device_id === deviceId);
-    const mode = settingsData?.bot_mode || 'subscription';
-
-    const phoneName = user?.device_name || `هاتف (${deviceId?.substring(0, 8)})`;
-    const nameEl = document.getElementById('detailsPhoneName');
-    if (nameEl) nameEl.textContent = '📱 ' + phoneName;
-
-    const statusEl = document.getElementById('detailsStatusBadge');
-    if (statusEl) {
-        if (user?.status === 'banned') {
-            statusEl.textContent = 'محظور';
-            statusEl.className = 'badge badge-banned';
-        } else {
-            statusEl.textContent = 'نشط';
-            statusEl.className = 'badge badge-active';
-        }
-    }
-
-    const endDateEl      = document.getElementById('detailsEndDate');
-    const remainingEl    = document.getElementById('detailsRemaining');
-    const startDateEl    = document.getElementById('detailsStartDate');
-    const codeEl         = document.getElementById('detailsCode');
-
-    if (lic) {
-        if (startDateEl) startDateEl.textContent = formatDate(lic.created_at || user?.created_at);
-        if (endDateEl && remainingEl) {
-            if (!lic.expires_at) {
-                endDateEl.textContent = '♾️ مدى الحياة';
-                endDateEl.style.color = '#60a5fa';
-                remainingEl.innerHTML = '<span class="badge badge-lifetime">♾️ لا ينتهي</span>';
-            } else {
-                const diff = new Date(lic.expires_at) - new Date();
-                endDateEl.textContent = formatDate(lic.expires_at);
-                endDateEl.style.color = diff < 0 ? 'var(--danger)' : diff < 86400000 * 3 ? 'var(--warning)' : 'var(--text)';
-                remainingEl.innerHTML = formatRemainingDays(lic.expires_at);
-            }
-        }
-        if (codeEl) {
-            codeEl.textContent = lic.license_key;
-            codeEl.style.cursor = 'pointer';
-            codeEl.title = 'اضغط لنسخ الكود';
-        }
-    } else if (mode === 'trial') {
-        const created = user?.created_at ? new Date(user.created_at) : new Date();
-        const trialEnd = new Date(created.getTime() + 24 * 3600000);
-        const diff = trialEnd - new Date();
-
-        if (startDateEl) startDateEl.textContent = formatDate(created.toISOString());
-        if (endDateEl) {
-            endDateEl.textContent = formatDate(trialEnd.toISOString()) + ' (تجربة)';
-            endDateEl.style.color = diff < 0 ? 'var(--danger)' : diff < 3600000 * 3 ? 'var(--warning)' : '#60a5fa';
-        }
-        if (remainingEl) remainingEl.innerHTML = formatRemainingDays(trialEnd.toISOString());
-        if (codeEl) {
-            codeEl.textContent = '— تجربة مجانية —';
-            codeEl.style.cursor = 'default';
-        }
-    } else if (mode === 'free') {
-        if (startDateEl) startDateEl.textContent = user?.created_at ? formatDate(user.created_at) : '—';
-        if (endDateEl) {
-            endDateEl.textContent = '🎁 مجاني بالكامل';
-            endDateEl.style.color = '#34d399';
-        }
-        if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-active" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.4);">لا ينتهي</span>';
-        if (codeEl) {
-            codeEl.textContent = '— وضع مجاني —';
-            codeEl.style.cursor = 'default';
-        }
-    } else {
-        if (startDateEl) startDateEl.textContent = user?.created_at ? formatDate(user.created_at) : '—';
-        if (endDateEl) {
-            endDateEl.textContent = 'بدون ترخيص';
-            endDateEl.style.color = 'var(--muted)';
-        }
-        if (remainingEl) remainingEl.innerHTML = '<span class="badge badge-expired">لا يوجد</span>';
-        if (codeEl) {
-            codeEl.textContent = '—';
-            codeEl.style.cursor = 'default';
-        }
-    }
-
-    const devIdEl = document.getElementById('detailsDeviceId');
-    if (devIdEl) devIdEl.textContent = deviceId || '—';
-
-    const modal = document.getElementById('userDetailsModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeUserDetailsModal() {
-    const modal = document.getElementById('userDetailsModal');
-    if (modal) modal.style.display = 'none';
-    detailsCurrentDeviceId = null;
-}
-
-function copyDetailsCode() {
-    const code = document.getElementById('detailsCode')?.textContent;
-    if (code && code !== '—' && !code.includes('مجاني')) {
-        navigator.clipboard.writeText(code);
-        showToast('✅ تم نسخ الكود بنجاح', 'success');
-    }
-}
-
-function renewFromDetails() {
-    if (!detailsCurrentDeviceId) return;
-    const id = detailsCurrentDeviceId;
-    closeUserDetailsModal();
-    if (window.openRenewModal) window.openRenewModal(id);
-}
-
-async function revokeFromDetails() {
-    if (!detailsCurrentDeviceId) return;
-    const usersData = window.SHARK.state.usersData || [];
-    const user = usersData.find(u => u.device_id === detailsCurrentDeviceId);
-    const name = user?.device_name || `هاتف (${detailsCurrentDeviceId?.substring(0, 8)})`;
-    if (!confirm(`هل أنت متأكد من إلغاء اشتراك "${name}"؟\nسيتم فك ارتباط الكود بجهازه.`)) return;
-    if (window.revokeDeviceLicense) {
-        await window.revokeDeviceLicense(detailsCurrentDeviceId);
-    }
-    closeUserDetailsModal();
-}
-
-// ── LISTENERS ─────────────────────────────────────────────────────────────
-
+// Event Listeners
 document.getElementById('userFilter')?.addEventListener('change', applyUserFilter);
 document.getElementById('userSearch')?.addEventListener('input', applyUserFilter);
 document.getElementById('refreshUsersBtn')?.addEventListener('click', async () => {
@@ -454,23 +484,28 @@ document.getElementById('refreshUsersBtn')?.addEventListener('click', async () =
     showToast('تم تحديث قائمة المستخدمين', 'success');
 });
 
-document.getElementById('actionsModal')?.addEventListener('click', e => {
-    if (e.target.id === 'actionsModal') closeActionsCard();
+document.getElementById('unifiedUserModal')?.addEventListener('click', e => {
+    if (e.target.id === 'unifiedUserModal') closeUserProfile();
 });
 
-document.getElementById('userDetailsModal')?.addEventListener('click', e => {
-    if (e.target.id === 'userDetailsModal') closeUserDetailsModal();
-});
-
-// Expose globals
-window.openActionsCard = openActionsCard;
-window.closeActionsCard = closeActionsCard;
-window.actionsToggleBlock = actionsToggleBlock;
-window.openUserDetailsModal = openUserDetailsModal;
-window.closeUserDetailsModal = closeUserDetailsModal;
-window.copyDetailsCode = copyDetailsCode;
-window.renewFromDetails = renewFromDetails;
-window.revokeFromDetails = revokeFromDetails;
+// Backward compatibility & global expose
+window.openUserProfile = openUserProfile;
+window.closeUserProfile = closeUserProfile;
+window.openActionsCard = openUserProfile;
+window.closeActionsCard = closeUserProfile;
+window.openUserDetailsModal = openUserProfile;
+window.closeUserDetailsModal = closeUserProfile;
+window.copyModalCode = copyModalCode;
+window.copyModalDeviceId = copyModalDeviceId;
+window.renewFromModal = renewFromModal;
+window.messageFromModal = messageFromModal;
+window.screenshotFromModal = screenshotFromModal;
+window.galleryFromModal = galleryFromModal;
+window.toggleBlockFromModal = toggleBlockFromModal;
+window.revokeFromModal = revokeFromModal;
+window.showDeleteConfirm = showDeleteConfirm;
+window.hideDeleteConfirm = hideDeleteConfirm;
+window.deleteUserFromModal = deleteUserFromModal;
 window.blockUser = blockUser;
 window.unblockUser = unblockUser;
 window.deleteUser = deleteUser;
@@ -482,8 +517,6 @@ window.SHARK.users = {
     blockUser,
     unblockUser,
     deleteUser,
-    openActionsCard,
-    closeActionsCard,
-    openUserDetailsModal,
-    closeUserDetailsModal
+    openUserProfile,
+    closeUserProfile
 };

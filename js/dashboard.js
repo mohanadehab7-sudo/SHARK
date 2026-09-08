@@ -1,6 +1,6 @@
 /**
  * 🦈 SHARK ADMIN DASHBOARD — DASHBOARD & OVERVIEW
- * Handles top-level KPI metrics, real-time system status banner, and expiry alerts table.
+ * Handles top-level KPI metrics, real-time system status banner, and quick action alert cards.
  */
 
 window.SHARK = window.SHARK || {};
@@ -57,12 +57,13 @@ async function loadDashboardData() {
     }
 }
 
-// ── EXPIRY TABLE ──────────────────────────────────────────────────────────
+// ── EXPIRY ALERT CARDS (ACTION CENTER) ─────────────────────────────────────
 
 function loadExpiryTable() {
     const filterVal = document.getElementById('expiryFilter')?.value || '7';
+    const container = document.getElementById('expiryCardsContainer');
     const tbody = document.getElementById('expiryTableBody');
-    if (!tbody) return;
+    if (!container && !tbody) return;
 
     const now = new Date();
     const mode = window.SHARK.state.settingsData?.bot_mode || 'subscription';
@@ -96,7 +97,9 @@ function loadExpiryTable() {
     });
 
     let filtered = rows;
-    if (filterVal !== 'all') {
+    if (filterVal === 'expired') {
+        filtered = rows.filter(r => r.expiresAt && r.expiresAt < now);
+    } else if (filterVal !== 'all') {
         const days = parseInt(filterVal);
         const limit = new Date(now.getTime() + days * 86400000);
         filtered = rows.filter(r => r.expiresAt && r.expiresAt <= limit);
@@ -113,49 +116,61 @@ function loadExpiryTable() {
     const countBadge = document.getElementById('expiryCount');
     if (countBadge) countBadge.textContent = `(${filtered.length})`;
 
-    if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="loading-cell"><i class="fas fa-check-circle" style="color:var(--success);"></i> لا توجد اشتراكات تنتهي في هذه الفترة</td></tr>`;
-        return;
+    // Render modern action cards
+    if (container) {
+        if (!filtered.length) {
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 36px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-md); color: var(--success);">
+                    <i class="fas fa-check-circle fa-2x" style="margin-bottom: 8px;"></i>
+                    <p style="font-weight: 600; font-size: 14px;">لا توجد اشتراكات تحتاج لتجديد عاجل حالياً</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = filtered.map(r => {
+                const { user: u, lic, expiresAt } = r;
+                const safeName = escapeHtml(u.device_name);
+                const safeId = escapeHtml(u.device_id);
+                const phoneName = safeName || `هاتف (${safeId.substring(0, 8)})`;
+                const endDate = expiresAt ? formatDate(expiresAt.toISOString()) : '—';
+                const remaining = expiresAt ? formatRemainingDays(expiresAt.toISOString()) : '—';
+                const diff = expiresAt ? expiresAt - now : -1;
+
+                const isUrgent = diff < 86400000 * 2;
+                const isWarning = diff >= 86400000 * 2 && diff < 86400000 * 7;
+                const cardClass = isUrgent ? 'urgent' : isWarning ? 'warning' : '';
+
+                return `
+                    <div class="expiry-card ${cardClass}">
+                        <div class="expiry-card-top">
+                            <span class="expiry-card-title">📱 ${phoneName}</span>
+                            <span class="badge ${diff < 0 ? 'badge-banned' : diff < 86400000 * 3 ? 'badge-expired' : 'badge-active'}">
+                                ${diff < 0 ? 'منتهي' : 'قريب الانتهاء'}
+                            </span>
+                        </div>
+                        <div class="expiry-card-dates">
+                            <div><i class="fas fa-calendar-times" style="margin-left:4px; opacity:0.7;"></i> الانتهاء: <b>${endDate}</b></div>
+                            <div><i class="fas fa-hourglass-half" style="margin-left:4px; opacity:0.7;"></i> المتبقي: ${remaining}</div>
+                        </div>
+                        <div class="expiry-card-actions">
+                            <button class="btn-success" onclick="openRenewModal('${safeId}')" title="تجديد"><i class="fas fa-sync-alt"></i> تجديد</button>
+                            <button class="btn-secondary" onclick="openMsgModal('${safeId}')" title="رسالة"><i class="fas fa-comment-dots"></i> رسالة</button>
+                            <button class="btn-secondary" onclick="openUserProfile('${safeId}')" title="عرض التفاصيل"><i class="fas fa-info-circle"></i> عرض</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
-
-    tbody.innerHTML = filtered.map((r, i) => {
-        const { user: u, lic, expiresAt, sourceLabel } = r;
-        const safeName = escapeHtml(u.device_name);
-        const safeId = escapeHtml(u.device_id);
-        const phoneName = safeName || `هاتف (${safeId.substring(0, 8)})`;
-        const startDate = lic?.created_at ? formatDate(lic.created_at) : (u.created_at ? formatDate(u.created_at) : '—');
-        const endDate   = expiresAt ? formatDate(expiresAt.toISOString()) : '—';
-        const remaining = expiresAt ? formatRemainingDays(expiresAt.toISOString()) : '<span style="color:var(--muted);">—</span>';
-        const diff = expiresAt ? expiresAt - now : -1;
-
-        let rowStyle = '';
-        if (diff < 0) rowStyle = 'style="background:rgba(239,68,68,0.04);"';
-        else if (diff < 86400000 * 3) rowStyle = 'style="background:rgba(245,158,11,0.04);"';
-
-        let statusBadge;
-        if (diff < 0) statusBadge = '<span class="badge badge-banned">منتهي</span>';
-        else if (diff < 86400000 * 3) statusBadge = '<span class="badge badge-expired">⚠️ قريب</span>';
-        else statusBadge = '<span class="badge badge-active">نشط</span>';
-
-        let typeBadge = '';
-        if (sourceLabel === 'تجربة 24س') typeBadge = '<span style="font-size:9px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:1px 5px;margin-right:4px;">تجربة</span>';
-        else if (sourceLabel === 'بدون ترخيص') typeBadge = '<span style="font-size:9px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);border-radius:4px;padding:1px 5px;margin-right:4px;">بدون</span>';
-
-        return `<tr ${rowStyle}>
-            <td style="color:var(--muted);text-align:center;">${i + 1}</td>
-            <td style="font-weight:700;color:var(--neon);font-size:12px;">📱 ${phoneName} ${typeBadge}</td>
-            <td style="font-size:12px;color:var(--muted);">${startDate}</td>
-            <td style="font-size:12px;color:var(--text);">${endDate}</td>
-            <td style="text-align:center;">${remaining}</td>
-            <td>${statusBadge}</td>
-            <td>
-                <button class="table-btn details-btn" onclick="openUserDetailsModal('${safeId}')" title="التفاصيل" style="width:auto;padding:0 10px;gap:4px;">
-                    <i class="fas fa-info-circle"></i> <span style="font-size:10px;">تفاصيل</span>
-                </button>
-            </td>
-        </tr>`;
-    }).join('');
 }
+
+function quickBroadcastMsg() {
+    if (window.openMsgModal) {
+        window.openMsgModal('__GLOBAL__');
+        const titleEl = document.getElementById('msgModalTitle');
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-bullhorn" aria-hidden="true"></i> إرسال إشعار عام لجميع الهواتف';
+    }
+}
+window.quickBroadcastMsg = quickBroadcastMsg;
 
 // Event Listeners
 document.getElementById('expiryFilter')?.addEventListener('change', loadExpiryTable);
@@ -163,5 +178,6 @@ document.getElementById('expiryFilter')?.addEventListener('change', loadExpiryTa
 window.loadExpiryTable = loadExpiryTable;
 window.SHARK.dashboard = {
     loadDashboardData,
-    loadExpiryTable
+    loadExpiryTable,
+    quickBroadcastMsg
 };

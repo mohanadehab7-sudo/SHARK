@@ -327,6 +327,40 @@ document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
     showToast(`✅ تم نسخ ${available.split('\n').length} كود إلى الحافظة`, 'success');
 });
 
+async function quickGenerateCode(days, label) {
+    showLoading(true);
+    try {
+        const key = rndNum(12);
+        let expiresAt = '2099-01-01T00:00:00.000Z';
+        let durDays = days;
+        if (days >= 36500) {
+            expiresAt = '2099-01-01T00:00:00.000Z';
+            durDays = 36500;
+        }
+
+        const { error } = await window.sb.from('licenses').insert([{
+            license_key: key,
+            expires_at: expiresAt,
+            duration_days: durDays,
+            status: 'active'
+        }]);
+
+        if (error) throw error;
+
+        await navigator.clipboard.writeText(key);
+        showToast(`✅ تم إنشاء كود (${label}) ونسخه للحافظة بنجاح: ${key}`, 'success');
+        await loadCodesData();
+        await window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Quick generate error:", err);
+        showToast('❌ فشل إنشاء الكود: ' + err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+window.quickGenerateCode = quickGenerateCode;
+window.quickGenerate30Days = () => quickGenerateCode(30, 'شهر');
+
 // Expose globals
 window.rndNum = rndNum;
 window.loadCodesData = loadCodesData;

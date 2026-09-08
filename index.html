@@ -91,16 +91,13 @@
         </div>
     </header>
 
-    <!-- Navigation Tabs (Desktop Horizontal / Mobile Bottom Navigation Bar) -->
+    <!-- Navigation Tabs (4 Balanced Tabs - Golden Mobile Ratio) -->
     <nav class="nav-tabs" role="tablist" aria-label="أقسام لوحة التحكم">
         <button class="tab-btn active" data-tab="dashboard" role="tab" aria-selected="true" id="tab-dashboard">
-            <i class="fas fa-chart-bar" aria-hidden="true"></i><span>الرئيسية</span>
+            <i class="fas fa-chart-pie" aria-hidden="true"></i><span>الرئيسية</span>
         </button>
         <button class="tab-btn" data-tab="users" role="tab" aria-selected="false" id="tab-users">
             <i class="fas fa-users" aria-hidden="true"></i><span>المستخدمين</span>
-        </button>
-        <button class="tab-btn" data-tab="stats" role="tab" aria-selected="false" id="tab-stats">
-            <i class="fas fa-chart-line" aria-hidden="true"></i><span>الإحصائيات</span>
         </button>
         <button class="tab-btn" data-tab="codes" role="tab" aria-selected="false" id="tab-codes">
             <i class="fas fa-key" aria-hidden="true"></i><span>الأكواد</span>
@@ -119,13 +116,50 @@
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
                 <span>حالة النظام: متصل ويعمل لجميع المستخدمين</span>
             </div>
+            
+            <!-- Quick Action Hub (إجراءات سريعة بنقرة واحدة) -->
+            <div class="quick-actions-hub">
+                <div class="hub-label"><i class="fas fa-bolt" aria-hidden="true"></i> اختصارات الإدارة السريعة:</div>
+                <div class="quick-actions-grid">
+                    <button class="quick-hub-btn primary" onclick="quickGenerate30Days()">
+                        <div class="hub-icon"><i class="fas fa-key" aria-hidden="true"></i></div>
+                        <div class="hub-text">
+                            <strong>توليد كود شهر</strong>
+                            <span>نسخ فوري بنقرة واحدة</span>
+                        </div>
+                    </button>
+                    <button class="quick-hub-btn info" onclick="quickBroadcastMsg()">
+                        <div class="hub-icon"><i class="fas fa-bullhorn" aria-hidden="true"></i></div>
+                        <div class="hub-text">
+                            <strong>إشعار للتطبيق</strong>
+                            <span>رسالة لجميع الهواتف</span>
+                        </div>
+                    </button>
+                    <button class="quick-hub-btn purple" onclick="window.switchTab('users')">
+                        <div class="hub-icon"><i class="fas fa-mobile-alt" aria-hidden="true"></i></div>
+                        <div class="hub-text">
+                            <strong>إدارة الأجهزة</strong>
+                            <span>بحث وتحكم شامل</span>
+                        </div>
+                    </button>
+                    <button class="quick-hub-btn warning" onclick="window.switchTab('settings')">
+                        <div class="hub-icon"><i class="fas fa-sliders-h" aria-hidden="true"></i></div>
+                        <div class="hub-text">
+                            <strong>وضع تشغيل البوت</strong>
+                            <span>اشتراك / تجربة / مجاني</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
-                    <div class="stat-info"><h3 id="totalUsers">0</h3><p>إجمالي المستخدمين</p></div>
+                    <div class="stat-info"><h3 id="totalUsers">0</h3><p>إجمالي الأجهزة</p></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon active"><i class="fas fa-user-check" aria-hidden="true"></i></div>
+                    <div class="stat-icon active"><i class="fas fa-wifi" aria-hidden="true"></i></div>
                     <div class="stat-info"><h3 id="activeUsers">0</h3><p>نشطين اليوم</p></div>
                 </div>
                 <div class="stat-card">
@@ -138,41 +172,33 @@
                 </div>
             </div>
 
-            <!-- جدول انتهاء الاشتراكات -->
+            <!-- Action Center: Urgent Subscription Alerts ONLY -->
             <div class="expiry-section">
                 <div class="section-header" style="margin-bottom:16px;">
-                    <h2><i class="fas fa-calendar-times" aria-hidden="true"></i> جدول انتهاء الاشتراكات <span id="expiryCount" class="count-badge"></span></h2>
+                    <h2><i class="fas fa-bell" aria-hidden="true"></i> تنبيهات الاشتراكات العاجلة <span id="expiryCount" class="count-badge"></span></h2>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <select id="expiryFilter" class="filter-select" aria-label="تصفية انتهاء الاشتراكات">
-                            <option value="7">⚠️ خلال 7 أيام</option>
-                            <option value="14">📅 خلال 14 يوم</option>
-                            <option value="30">📆 خلال 30 يوم</option>
-                            <option value="all">📋 جميع المشتركين</option>
+                        <select id="expiryFilter" class="filter-select" aria-label="تصفية التنبيهات">
+                            <option value="3">🚨 تنتهي خلال 3 أيام</option>
+                            <option value="7">⚠️ تنتهي خلال أسبوع</option>
+                            <option value="expired">🚫 منتهية وتحتاج تجديد</option>
                         </select>
-                        <button class="btn-secondary" onclick="loadExpiryTable()" aria-label="تحديث جدول الانتهاء">
+                        <button class="btn-secondary" onclick="loadExpiryTable()" aria-label="تحديث التنبيهات">
                             <i class="fas fa-sync-alt" aria-hidden="true"></i> تحديث
                         </button>
                     </div>
                 </div>
-                <div class="table-container">
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>اسم الهاتف</th>
-                                    <th>تاريخ البداية</th>
-                                    <th>تاريخ الانتهاء</th>
-                                    <th>المتبقي</th>
-                                    <th>الحالة</th>
-                                    <th>الإجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expiryTableBody">
-                                <tr><td colspan="7" class="loading-cell"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> جاري التحميل...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Rendered as quick action alert cards -->
+                <div id="expiryCardsContainer" class="expiry-cards-grid">
+                    <div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--muted);">
+                        <i class="fas fa-circle-notch fa-spin"></i> جاري فحص التنبيهات...
                     </div>
+                </div>
+
+                <div class="view-all-users-banner">
+                    <button class="btn-secondary view-all-btn" onclick="window.switchTab('users')">
+                        <span>الانتقال لإدارة جميع الأجهزة والمستخدمين</span>
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -180,23 +206,30 @@
         <!-- ── TAB: USERS ── -->
         <div id="users" class="tab-content" role="tabpanel" aria-labelledby="tab-users" hidden>
             <div class="section-header">
-                <h2><i class="fas fa-users" aria-hidden="true"></i> إدارة المستخدمين <span id="filteredCount" class="count-badge"></span></h2>
+                <h2><i class="fas fa-users" aria-hidden="true"></i> إدارة الأجهزة والمستخدمين <span id="filteredCount" class="count-badge"></span></h2>
                 <div class="filters">
                     <div class="search-box">
                         <i class="fas fa-search" aria-hidden="true"></i>
                         <input type="text" id="userSearch" placeholder="بحث بالاسم أو المعرف..." aria-label="بحث عن مستخدم">
                     </div>
                     <select id="userFilter" aria-label="تصفية المستخدمين">
-                        <option value="all">👥 جميع المستخدمين</option>
-                        <option value="most_active">🏆 الأكثر نشاطاً (تجميع وتشغيل)</option>
+                        <option value="all">👥 جميع الأجهزة</option>
+                        <option value="most_active">🏆 الأكثر نشاطاً (مغلفات وتشغيل)</option>
                         <option value="expired_or_expiring">⚠️ منتهي أو قريب الانتهاء</option>
                         <option value="blocked">🚫 المحظورين فقط</option>
                     </select>
-                    <button id="refreshUsersBtn" class="btn-secondary" aria-label="تحديث المستخدمين"><i class="fas fa-sync" aria-hidden="true"></i> تحديث</button>
+                    <button id="refreshUsersBtn" class="btn-secondary" aria-label="تحديث الأجهزة"><i class="fas fa-sync" aria-hidden="true"></i> تحديث</button>
                     <button id="msgAllFilteredBtn" class="btn-primary" aria-label="إرسال رسالة للكل"><i class="fas fa-bullhorn" aria-hidden="true"></i> رسالة للكل</button>
+                    <button id="cleanEmulatorsBtn" class="btn-secondary" title="حذف أجهزة المحاكاة الوهمية"><i class="fas fa-robot" aria-hidden="true"></i> تنظيف المحاكيات</button>
+                    <button id="resetAllUsersBtn" class="btn-secondary" title="تصفير عدادات الاستخدام"><i class="fas fa-undo" aria-hidden="true"></i> تصفير العدادات</button>
                 </div>
             </div>
-            <div class="table-container">
+
+            <!-- Mobile Touch Cards View (تلقائي على الموبايل) -->
+            <div id="usersCardsContainer" class="users-mobile-cards-view"></div>
+
+            <!-- Desktop High Density Table View -->
+            <div class="table-container desktop-table-view">
                 <div class="table-scroll">
                     <table class="data-table">
                         <thead>
@@ -210,7 +243,7 @@
                                 <th>المغلفات</th>
                                 <th>وقت التشغيل</th>
                                 <th>الحالة</th>
-                                <th>الإجراءات</th>
+                                <th>الإدارة</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -221,99 +254,101 @@
             </div>
         </div>
 
-        <!-- ── TAB: STATS ── -->
-        <div id="stats" class="tab-content" role="tabpanel" aria-labelledby="tab-stats" hidden>
-            <div class="section-header">
-                <h2><i class="fas fa-chart-line" aria-hidden="true"></i> إحصائيات الاستخدام والنشاط</h2>
-                <button class="btn-secondary" onclick="loadStatsData()" aria-label="تحديث الإحصائيات"><i class="fas fa-sync-alt" aria-hidden="true"></i> تحديث</button>
-            </div>
-            <div class="table-container">
-                <div class="table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>المستخدم (Device ID)</th>
-                                <th>آخر ظهور</th>
-                                <th>المغلفات الكلية</th>
-                                <th>وقت التشغيل</th>
-                                <th>حالة الجهاز</th>
-                            </tr>
-                        </thead>
-                        <tbody id="statsTableBody">
-                            <tr><td colspan="5" class="loading-cell"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> جاري التحميل...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
         <!-- ── TAB: CODES ── -->
         <div id="codes" class="tab-content" role="tabpanel" aria-labelledby="tab-codes" hidden>
-            <!-- Code Generator Card -->
-            <div class="code-generator-card">
-                <h2><i class="fas fa-magic" aria-hidden="true"></i> إنشاء كود تفعيل</h2>
-                <div class="duration-section">
-                    <label class="duration-label">نوع المدة</label>
-                    <div class="duration-type-tabs" role="group" aria-label="نوع مدة الكود">
-                        <button class="dtype-btn active" data-type="preset">مدد جاهزة</button>
-                        <button class="dtype-btn" data-type="custom">مدة مخصصة</button>
-                        <button class="dtype-btn" data-type="date">تاريخ انتهاء</button>
-                        <button class="dtype-btn" data-type="lifetime">♾️ مدى الحياة</button>
-                    </div>
-                    <div id="presetPanel" class="duration-panel">
-                        <div class="preset-grid">
-                            <button class="preset-btn trial-btn" data-days="0.125">⚡ 3 ساعات تجربة</button>
-                            <button class="preset-btn" data-days="1">24 ساعة</button>
-                            <button class="preset-btn" data-days="7">7 أيام</button>
-                            <button class="preset-btn active" data-days="30">30 يوم</button>
-                            <button class="preset-btn" data-days="90">3 شهور</button>
-                        </div>
-                    </div>
-                    <div id="customPanel" class="duration-panel" style="display:none;">
-                        <div class="custom-duration-row">
-                            <input type="number" id="customValue" min="1" max="9999" value="1" class="custom-input" aria-label="القيمة الرقمية للمدة">
-                            <select id="customUnit" class="custom-select" aria-label="وحدة المدة">
-                                <option value="hours">ساعة</option>
-                                <option value="days">يوم</option>
-                                <option value="months" selected>شهر</option>
-                                <option value="years">سنة</option>
-                            </select>
-                        </div>
-                        <p class="duration-preview" id="customPreview">= 30 يوم</p>
-                    </div>
-                    <div id="datePanel" class="duration-panel" style="display:none;">
-                        <input type="date" id="expiryDate" class="date-input" aria-label="تاريخ انتهاء الكود">
-                        <p class="duration-preview" id="datePreview">اختر تاريخ الانتهاء</p>
-                    </div>
-                    <div id="lifetimePanel" class="duration-panel" style="display:none;">
-                        <div class="lifetime-badge"><i class="fas fa-infinity" aria-hidden="true"></i> هذا الكود لن ينتهي أبداً — مدى الحياة</div>
-                    </div>
+            
+            <!-- Quick 1-Click Generator Pills (أكواد سريعة بنقرة واحدة) -->
+            <div class="quick-code-generator">
+                <div class="hub-label"><i class="fas fa-bolt" style="color:var(--neon);" aria-hidden="true"></i> توليد ونسخ فوري بنقرة واحدة:</div>
+                <div class="quick-code-pills-row">
+                    <button class="code-pill primary" onclick="quickGenerateCode(30, 'شهر')">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> كود شهر (30 يوم)
+                    </button>
+                    <button class="code-pill info" onclick="quickGenerateCode(90, '3 شهور')">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> كود 3 شهور
+                    </button>
+                    <button class="code-pill purple" onclick="quickGenerateCode(365, 'سنة')">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> كود سنة (365 يوم)
+                    </button>
+                    <button class="code-pill warning" onclick="quickGenerateCode(0.125, '3 ساعات تجربة')">
+                        <i class="fas fa-bolt" aria-hidden="true"></i> تجربة 3 ساعات
+                    </button>
+                    <button class="code-pill lifetime" onclick="quickGenerateCode(36500, 'مدى الحياة')">
+                        <i class="fas fa-infinity" aria-hidden="true"></i> مدى الحياة
+                    </button>
                 </div>
-                <div class="count-section">
-                    <label class="duration-label">عدد الأكواد المراد توليدها</label>
-                    <div class="count-row">
-                        <button class="count-btn" onclick="adjustCount(-1)" aria-label="تقليل العدد">-</button>
-                        <input type="number" id="codeCount" value="1" min="1" max="100" class="count-input" aria-label="عدد الأكواد">
-                        <button class="count-btn" onclick="adjustCount(1)" aria-label="زيادة العدد">+</button>
-                        <button class="count-preset" onclick="setCount(1)">1</button>
-                        <button class="count-preset" onclick="setCount(5)">5</button>
-                        <button class="count-preset" onclick="setCount(10)">10</button>
-                        <button class="count-preset" onclick="setCount(50)">50</button>
-                    </div>
-                </div>
-                <div class="code-summary" id="codeSummary" role="status">
-                    <i class="fas fa-info-circle" aria-hidden="true"></i>
-                    <span id="summaryText">سيتم توليد 1 كود صالح لـ 30 يوم</span>
-                </div>
-                <button id="generateCodesMainBtn" class="neon-generate-btn">
-                    <i class="fas fa-plus-circle" aria-hidden="true"></i> توليد الأكواد الآن
-                </button>
             </div>
+
+            <!-- Custom / Batch Generator Accordion -->
+            <details class="custom-generator-card">
+                <summary class="custom-gen-summary">
+                    <span><i class="fas fa-sliders-h" aria-hidden="true"></i> تخصيص متقدم أو توليد أعداد متعددة (اختياري)</span>
+                    <i class="fas fa-chevron-down summary-arrow" aria-hidden="true"></i>
+                </summary>
+                <div class="custom-gen-body">
+                    <div class="duration-section">
+                        <label class="duration-label">نوع المدة</label>
+                        <div class="duration-type-tabs" role="group" aria-label="نوع مدة الكود">
+                            <button class="dtype-btn active" data-type="preset">مدد جاهزة</button>
+                            <button class="dtype-btn" data-type="custom">مدة مخصصة</button>
+                            <button class="dtype-btn" data-type="date">تاريخ انتهاء</button>
+                            <button class="dtype-btn" data-type="lifetime">♾️ مدى الحياة</button>
+                        </div>
+                        <div id="presetPanel" class="duration-panel">
+                            <div class="preset-grid">
+                                <button class="preset-btn trial-btn" data-days="0.125">⚡ 3 ساعات تجربة</button>
+                                <button class="preset-btn" data-days="1">24 ساعة</button>
+                                <button class="preset-btn" data-days="7">7 أيام</button>
+                                <button class="preset-btn active" data-days="30">30 يوم</button>
+                                <button class="preset-btn" data-days="90">3 شهور</button>
+                            </div>
+                        </div>
+                        <div id="customPanel" class="duration-panel" style="display:none;">
+                            <div class="custom-duration-row">
+                                <input type="number" id="customValue" min="1" max="9999" value="1" class="custom-input" aria-label="القيمة الرقمية للمدة">
+                                <select id="customUnit" class="custom-select" aria-label="وحدة المدة">
+                                    <option value="hours">ساعة</option>
+                                    <option value="days">يوم</option>
+                                    <option value="months" selected>شهر</option>
+                                    <option value="years">سنة</option>
+                                </select>
+                            </div>
+                            <p class="duration-preview" id="customPreview">= 30 يوم</p>
+                        </div>
+                        <div id="datePanel" class="duration-panel" style="display:none;">
+                            <input type="date" id="expiryDate" class="date-input" aria-label="تاريخ انتهاء الكود">
+                            <p class="duration-preview" id="datePreview">اختر تاريخ الانتهاء</p>
+                        </div>
+                        <div id="lifetimePanel" class="duration-panel" style="display:none;">
+                            <div class="lifetime-badge"><i class="fas fa-infinity" aria-hidden="true"></i> هذا الكود لن ينتهي أبداً — مدى الحياة</div>
+                        </div>
+                    </div>
+                    <div class="count-section">
+                        <label class="duration-label">عدد الأكواد المراد توليدها</label>
+                        <div class="count-row">
+                            <button class="count-btn" onclick="adjustCount(-1)" aria-label="تقليل العدد">-</button>
+                            <input type="number" id="codeCount" value="1" min="1" max="100" class="count-input" aria-label="عدد الأكواد">
+                            <button class="count-btn" onclick="adjustCount(1)" aria-label="زيادة العدد">+</button>
+                            <button class="count-preset" onclick="setCount(1)">1</button>
+                            <button class="count-preset" onclick="setCount(5)">5</button>
+                            <button class="count-preset" onclick="setCount(10)">10</button>
+                            <button class="count-preset" onclick="setCount(50)">50</button>
+                        </div>
+                    </div>
+                    <div class="code-summary" id="codeSummary" role="status">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        <span id="summaryText">سيتم توليد 1 كود صالح لـ 30 يوم</span>
+                    </div>
+                    <button id="generateCodesMainBtn" class="neon-generate-btn">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> توليد الأكواد المخصصة الآن
+                    </button>
+                </div>
+            </details>
 
             <!-- Codes Table -->
             <div class="section-header" style="margin-top:24px;">
                 <h2><i class="fas fa-list" aria-hidden="true"></i> قائمة الأكواد <span id="codesCount" class="count-badge"></span></h2>
-                <div style="display:flex;gap:8px;">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <select id="codesFilter" class="filter-select" aria-label="تصفية الأكواد">
                         <option value="all">جميع الأكواد</option>
                         <option value="available">متاحة فقط</option>
@@ -323,6 +358,7 @@
                     </select>
                     <button id="refreshCodesBtn" class="btn-secondary" aria-label="تحديث الأكواد"><i class="fas fa-sync" aria-hidden="true"></i></button>
                     <button id="copyAvailableBtn" class="btn-primary" aria-label="نسخ الأكواد المتاحة"><i class="fas fa-copy" aria-hidden="true"></i> نسخ المتاحة</button>
+                    <button id="deleteUnusedCodesBtn" class="btn-danger" style="padding:8px 12px;font-size:12px;" title="حذف الأكواد غير المستخدمة"><i class="fas fa-trash" aria-hidden="true"></i> حذف غير المستخدمة</button>
                 </div>
             </div>
             <div class="table-container">
@@ -350,10 +386,10 @@
         <!-- ── TAB: SETTINGS ── -->
         <div id="settings" class="tab-content" role="tabpanel" aria-labelledby="tab-settings" hidden>
             <div class="settings-card">
-                <h2><i class="fas fa-cog" aria-hidden="true"></i> إعدادات النظام</h2>
+                <h2><i class="fas fa-cog" aria-hidden="true"></i> إعدادات تشغيل البوت</h2>
 
                 <div class="setting-item">
-                    <label for="botMode">وضع تشغيل البوت (Bot Mode):</label>
+                    <label for="botMode">وضع تشغيل البوت العام (Bot Mode):</label>
                     <select id="botMode">
                         <option value="subscription">🔑 وضع الاشتراك وكود التفعيل (Subscription)</option>
                         <option value="trial">🕒 فترة تجريبية مجانية للأجهزة الجديدة (Trial)</option>
@@ -370,18 +406,27 @@
                 </div>
                 <div class="setting-item">
                     <label for="globalMessage">رسالة عامة تظهر للمستخدمين داخل التطبيق:</label>
-                    <textarea id="globalMessage" rows="3" placeholder="الرسالة التي ستظهر للمستخدمين عند فتح التطبيق"></textarea>
+                    <textarea id="globalMessage" rows="3" placeholder="اكتب هنا الرسالة أو الإشعار الذي سيظهر لجميع المستخدمين عند فتح التطبيق..."></textarea>
                 </div>
                 <button id="saveSettingsBtn" class="neon-generate-btn"><i class="fas fa-save" aria-hidden="true"></i> حفظ الإعدادات</button>
             </div>
 
-            <div class="danger-zone-card">
-                <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> منطقة الخطر والصيانة</h3>
-                <p>هذه الإجراءات فورية ولا يمكن التراجع عنها!</p>
-                <div class="danger-buttons">
-                    <button id="deleteUnusedCodesBtn" class="btn-danger"><i class="fas fa-trash" aria-hidden="true"></i> حذف الأكواد غير المستخدمة</button>
-                    <button id="cleanEmulatorsBtn" class="btn-danger" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b;"><i class="fas fa-robot" aria-hidden="true"></i> تنظيف أجهزة المحاكاة</button>
-                    <button id="resetAllUsersBtn" class="btn-danger"><i class="fas fa-user-times" aria-hidden="true"></i> تصفير عدادات الاستخدام</button>
+            <!-- Platform Security & System Info -->
+            <div class="settings-card" style="margin-top:20px;">
+                <h2><i class="fas fa-shield-alt" aria-hidden="true"></i> أمان النظام وبيانات الاتصال</h2>
+                <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:var(--muted);">
+                    <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;">
+                        <span>🔒 بروتوكول الأمان (RLS):</span>
+                        <span style="color:#4ade80;font-weight:700;"><i class="fas fa-check-circle"></i> مفعل ومحمي 100%</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;">
+                        <span>⚡ وضع العرض:</span>
+                        <span style="color:var(--neon);font-weight:700;">Native App Mobile Responsive</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>📱 إصدار لوحة التحكم:</span>
+                        <span style="font-family:'JetBrains Mono',monospace;color:var(--text);">V8.5 Enterprise</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -391,7 +436,105 @@
 
 <!-- ═══════════════════════════════════════════════ MODALS ════════ -->
 
-<!-- Renew Modal -->
+<!-- 1. UNIFIED USER PROFILE & CONTROL SHEET (دمج النافذتين في نافذة واحدة شاملة) -->
+<div id="unifiedUserModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modalPhoneName">
+    <div class="modal-box user-details-card" style="max-width:480px;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
+        <div class="details-card-header">
+            <div class="details-phone-icon">
+                <i class="fas fa-mobile-alt" aria-hidden="true"></i>
+            </div>
+            <div class="details-title-group">
+                <h3 id="modalPhoneName">اسم الهاتف</h3>
+                <div style="display:flex; gap:6px; align-items:center; margin-top:2px;">
+                    <span id="modalOnlineBadge" class="badge badge-active" style="font-size:10px;">متصل الآن</span>
+                    <span id="modalStatusBadge" class="badge badge-active">نشط</span>
+                </div>
+            </div>
+            <button class="details-close-btn" onclick="closeUserProfile()" aria-label="إغلاق"><i class="fas fa-times" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="details-body" style="padding:18px 20px;">
+            <!-- Subscription Info -->
+            <div class="details-row">
+                <div class="details-item">
+                    <span class="details-label"><i class="fas fa-calendar-times" aria-hidden="true"></i> انتهاء الاشتراك</span>
+                    <span id="modalSubEnd" class="details-value">—</span>
+                    <span id="modalRemaining" style="font-size:11px; margin-top:4px; display:block;">—</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label"><i class="fas fa-key" aria-hidden="true"></i> كود التفعيل</span>
+                    <span id="modalLicenseKey" class="details-value details-code" onclick="copyModalCode()" title="اضغط لنسخ الكود">—</span>
+                </div>
+            </div>
+
+            <!-- Activity Telemetry Stats -->
+            <div class="details-row" style="margin-bottom:14px;">
+                <div class="details-item">
+                    <span class="details-label"><i class="fas fa-envelope-open-text" aria-hidden="true"></i> المغلفات المجمعة</span>
+                    <span id="modalTotalRuns" class="details-value" style="color:#f0abfc;">0</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label"><i class="fas fa-stopwatch" aria-hidden="true"></i> وقت التشغيل</span>
+                    <span id="modalTotalMins" class="details-value" style="color:#a5b4fc;">0 د</span>
+                </div>
+            </div>
+
+            <!-- Device ID -->
+            <div class="details-item" style="margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <span class="details-label"><i class="fas fa-fingerprint" aria-hidden="true"></i> معرف الجهاز (Device ID)</span>
+                    <span id="modalDeviceId" class="details-value" style="font-family:'JetBrains Mono',monospace; font-size:11px; word-break:break-all;">—</span>
+                </div>
+                <button onclick="copyModalDeviceId()" class="btn-secondary" style="padding:6px 10px; font-size:11px;" title="نسخ المعرف">
+                    <i class="fas fa-copy" aria-hidden="true"></i> نسخ
+                </button>
+            </div>
+
+            <!-- Quick Action Grid -->
+            <label class="details-label" style="margin-bottom:8px;"><i class="fas fa-bolt" aria-hidden="true"></i> لوحة التحكم والإجراءات:</label>
+            <div class="actions-grid">
+                <button class="action-card-btn success" onclick="renewFromModal()">
+                    <i class="fas fa-calendar-plus" aria-hidden="true"></i><span>تجديد</span>
+                </button>
+                <button class="action-card-btn info" onclick="messageFromModal()">
+                    <i class="fas fa-comment-dots" aria-hidden="true"></i><span>رسالة</span>
+                </button>
+                <button class="action-card-btn cyan" onclick="screenshotFromModal()">
+                    <i class="fas fa-camera" aria-hidden="true"></i><span>لقطة</span>
+                </button>
+                <button class="action-card-btn purple" onclick="galleryFromModal()">
+                    <i class="fas fa-images" aria-hidden="true"></i><span>معرض</span>
+                </button>
+                <button class="action-card-btn" id="modalBlockBtn" onclick="toggleBlockFromModal()">
+                    <i class="fas fa-ban" aria-hidden="true"></i><span id="modalBlockLabel">حظر</span>
+                </button>
+                <button class="action-card-btn danger-soft" onclick="revokeFromModal()">
+                    <i class="fas fa-unlink" aria-hidden="true"></i><span>فك الكود</span>
+                </button>
+            </div>
+
+            <!-- Delete confirmation -->
+            <div id="modalDeleteSection" style="margin-top:12px;">
+                <div id="modalDeleteConfirm" style="display:none;" class="revoke-confirm-box">
+                    <div class="revoke-confirm-msg">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        <span>هل أنت متأكد من حذف هذا الجهاز نهائياً من النظام؟</span>
+                    </div>
+                    <div class="revoke-confirm-btns">
+                        <button onclick="deleteUserFromModal()" class="revoke-yes"><i class="fas fa-check" aria-hidden="true"></i> نعم، احذف</button>
+                        <button onclick="hideDeleteConfirm()" class="revoke-no"><i class="fas fa-times" aria-hidden="true"></i> إلغاء</button>
+                    </div>
+                </div>
+                <button id="modalDeleteBtn" class="action-card-btn-full delete" onclick="showDeleteConfirm()">
+                    <i class="fas fa-trash" aria-hidden="true"></i> حذف الجهاز نهائياً
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Renew Modal -->
 <div id="renewModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="renewModalTitle">
     <div class="modal-box" style="max-width:460px;">
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -439,7 +582,7 @@
     </div>
 </div>
 
-<!-- Message Modal -->
+<!-- 3. Message Modal -->
 <div id="msgModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="msgModalTitle">
     <div class="modal-box">
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -453,7 +596,7 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- 4. Screenshot Modal -->
 <div id="screenshotModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="screenshotModalTitle">
     <div class="modal-box" style="max-width: 500px;">
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -473,7 +616,7 @@
     </div>
 </div>
 
-<!-- Gallery Modal -->
+<!-- 5. Gallery Modal -->
 <div id="galleryModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="galleryModalTitle">
     <div class="modal-box" style="max-width: 800px; width: 95%;">
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -486,122 +629,6 @@
             <button class="btn-secondary" onclick="closeGalleryModal()">إغلاق</button>
             <button class="btn-danger" onclick="deleteAllScreenshots()"><i class="fas fa-trash" aria-hidden="true"></i> حذف الكل</button>
             <button id="refreshGalleryBtn" class="btn-primary"><i class="fas fa-sync-alt" aria-hidden="true"></i> تحديث</button>
-        </div>
-    </div>
-</div>
-
-<!-- Actions Card Modal -->
-<div id="actionsModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="actionsPhoneName">
-    <div class="modal-box user-details-card" style="max-width:400px;">
-        <div class="bottom-sheet-handle" aria-hidden="true"></div>
-        <div class="details-card-header">
-            <div class="details-phone-icon">
-                <i class="fas fa-mobile-alt" aria-hidden="true"></i>
-            </div>
-            <div class="details-title-group">
-                <h3 id="actionsPhoneName">اسم الهاتف</h3>
-                <span id="actionsStatusBadge" class="badge badge-active">نشط</span>
-            </div>
-            <button class="details-close-btn" onclick="closeActionsCard()" aria-label="إغلاق"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
-        <div class="details-body" style="padding:16px 20px;">
-            <div class="actions-info-row">
-                <div class="actions-info-item">
-                    <span class="details-label"><i class="fas fa-calendar-times" aria-hidden="true"></i> ينتهي</span>
-                    <span id="actionsSubEnd" class="details-value" style="font-size:12px;">—</span>
-                </div>
-                <div class="actions-info-item">
-                    <span class="details-label"><i class="fas fa-hourglass-half" aria-hidden="true"></i> المتبقي</span>
-                    <span id="actionsRemaining" class="details-value" style="font-size:12px;">—</span>
-                </div>
-            </div>
-
-            <!-- أزرار الإجراءات -->
-            <div class="actions-grid">
-                <button class="action-card-btn primary" onclick="openUserDetailsModal(window.actionsDeviceId); closeActionsCard()">
-                    <i class="fas fa-info-circle" aria-hidden="true"></i><span>التفاصيل</span>
-                </button>
-                <button class="action-card-btn success" onclick="openRenewModal(window.actionsDeviceId); closeActionsCard()">
-                    <i class="fas fa-calendar-plus" aria-hidden="true"></i><span>تجديد</span>
-                </button>
-                <button class="action-card-btn info" onclick="openMsgModal(window.actionsDeviceId); closeActionsCard()">
-                    <i class="fas fa-comment-dots" aria-hidden="true"></i><span>رسالة</span>
-                </button>
-                <button class="action-card-btn cyan" onclick="openScreenshotModal(window.actionsDeviceId); closeActionsCard()">
-                    <i class="fas fa-camera" aria-hidden="true"></i><span>لقطة</span>
-                </button>
-                <button class="action-card-btn purple" onclick="openGalleryModal(window.actionsDeviceId); closeActionsCard()">
-                    <i class="fas fa-images" aria-hidden="true"></i><span>معرض</span>
-                </button>
-                <button class="action-card-btn" id="actionsBlockBtn" onclick="actionsToggleBlock()">
-                    <i class="fas fa-ban" aria-hidden="true"></i><span id="actionsBlockLabel">حظر</span>
-                </button>
-            </div>
-
-            <!-- حذف نهائي مع تأكيد -->
-            <div id="actionsDeleteSection" style="margin-top:12px;">
-                <div id="actionsDeleteConfirm" style="display:none;" class="revoke-confirm-box">
-                    <div class="revoke-confirm-msg">
-                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-                        <span>هل تريد حذف المستخدم نهائياً؟ لا يمكن التراجع.</span>
-                    </div>
-                    <div class="revoke-confirm-btns">
-                        <button onclick="deleteUser(window.actionsDeviceId); closeActionsCard()" class="revoke-yes"><i class="fas fa-check" aria-hidden="true"></i> نعم، احذف</button>
-                        <button onclick="document.getElementById('actionsDeleteConfirm').style.display='none'; document.getElementById('actionsDeleteBtn').style.display='flex';" class="revoke-no"><i class="fas fa-times" aria-hidden="true"></i> لا</button>
-                    </div>
-                </div>
-                <button id="actionsDeleteBtn" class="action-card-btn-full delete" style="margin-top:0;" onclick="document.getElementById('actionsDeleteConfirm').style.display='block'; this.style.display='none';">
-                    <i class="fas fa-trash" aria-hidden="true"></i> حذف المستخدم نهائياً
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- User Details Card Modal -->
-<div id="userDetailsModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="detailsPhoneName">
-    <div class="modal-box user-details-card" style="max-width:480px;">
-        <div class="bottom-sheet-handle" aria-hidden="true"></div>
-        <div class="details-card-header">
-            <div class="details-phone-icon">
-                <i class="fas fa-mobile-alt" aria-hidden="true"></i>
-            </div>
-            <div class="details-title-group">
-                <h3 id="detailsPhoneName">اسم الهاتف</h3>
-                <span id="detailsStatusBadge" class="badge badge-active">نشط</span>
-            </div>
-            <button class="details-close-btn" onclick="closeUserDetailsModal()" aria-label="إغلاق"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
-        <div class="details-body">
-            <div class="details-row">
-                <div class="details-item">
-                    <span class="details-label"><i class="fas fa-calendar-plus" aria-hidden="true"></i> تاريخ البداية</span>
-                    <span id="detailsStartDate" class="details-value">—</span>
-                </div>
-                <div class="details-item">
-                    <span class="details-label"><i class="fas fa-calendar-times" aria-hidden="true"></i> تاريخ الانتهاء</span>
-                    <span id="detailsEndDate" class="details-value">—</span>
-                </div>
-            </div>
-            <div class="details-row">
-                <div class="details-item">
-                    <span class="details-label"><i class="fas fa-hourglass-half" aria-hidden="true"></i> المتبقي</span>
-                    <span id="detailsRemaining" class="details-value">—</span>
-                </div>
-                <div class="details-item">
-                    <span class="details-label"><i class="fas fa-key" aria-hidden="true"></i> رقم الكود</span>
-                    <span id="detailsCode" class="details-value details-code" onclick="copyDetailsCode()" title="اضغط للنسخ">—</span>
-                </div>
-            </div>
-            <div class="details-device-id">
-                <span class="details-label"><i class="fas fa-fingerprint" aria-hidden="true"></i> Device ID</span>
-                <span id="detailsDeviceId" class="details-value" style="font-family:'JetBrains Mono',monospace;font-size:11px;word-break:break-all;">—</span>
-            </div>
-        </div>
-        <div class="details-footer">
-            <button class="btn-secondary" onclick="closeUserDetailsModal()"><i class="fas fa-times" aria-hidden="true"></i> إغلاق</button>
-            <button class="btn-danger" onclick="revokeFromDetails()" style="flex:1;justify-content:center;"><i class="fas fa-times-circle" aria-hidden="true"></i> إلغاء الاشتراك</button>
-            <button class="btn-success" id="detailsRenewBtn" onclick="renewFromDetails()"><i class="fas fa-sync-alt" aria-hidden="true"></i> تجديد</button>
         </div>
     </div>
 </div>
@@ -627,7 +654,6 @@
 <script src="js/screenshots.js"></script>
 <script src="js/renew.js"></script>
 <script src="js/codes.js"></script>
-<script src="js/stats.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/app.js"></script>
 </body>

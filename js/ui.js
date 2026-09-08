@@ -127,12 +127,19 @@ function initTabs() {
     });
 }
 
+function switchTab(tabId) {
+    const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (btn) btn.click();
+}
+window.switchTab = switchTab;
+
 // ── KEYBOARD ACCESSIBILITY ────────────────────────────────────────────────
 
 function initAccessibility() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             // Close any open modals
+            if (window.closeUserProfile) window.closeUserProfile();
             if (window.closeRenewModal) window.closeRenewModal();
             if (window.closeMsgModal) window.closeMsgModal();
             if (window.closeScreenshotModal) window.closeScreenshotModal();
