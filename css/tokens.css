@@ -77,12 +77,12 @@
   --shadow-card: var(--shadow-md);
   --shadow-modal: 0 25px 60px rgba(0, 0, 0, 0.8);
 
-  /* Layout & Mobile (iPhone HIG Sovereign Standard) */
-  --header-height:       52px;
-  --bottom-nav-height:   58px;
+  /* Layout & Mobile (Compact iPhone Sovereign Standard) */
+  --header-height:       44px;
+  --bottom-nav-height:   50px;
   --safe-area-top:       env(safe-area-inset-top, 0px);
   --safe-area-bottom:    env(safe-area-inset-bottom, 0px);
-  --total-bottom-offset: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 24px);
+  --total-bottom-offset: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
 }
 
 * {

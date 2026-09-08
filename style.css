@@ -2,8 +2,8 @@
    SHARK BOT ADMIN — MASTER STYLESHEET (KAFR SAKR THEME)
    ════════════════════════════════════════════════════ */
 
-@import url('css/tokens.css?v=10.1');
-@import url('css/components.css?v=10.1');
+@import url('css/tokens.css?v=10.3');
+@import url('css/components.css?v=10.3');
 
 /* ════════════════ LOGIN SCREEN ════════════════ */
 .login-container {
@@ -268,20 +268,33 @@
 /* ════════════════ MOBILE ADAPTATION ════════════════ */
 @media (max-width: 768px) {
     .app-header {
-        height: calc(50px + var(--safe-area-top));
-        padding: var(--safe-area-top) 14px 0 14px;
+        height: calc(44px + var(--safe-area-top));
+        padding: var(--safe-area-top) 10px 0 10px;
+    }
+    .header-brand {
+        gap: 6px;
     }
     .header-brand span {
-        font-size: 13.5px;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+    }
+    .header-right {
+        gap: 6px;
     }
     .header-online {
         display: inline-flex;
-        padding: 2px 7px;
-        font-size: 11px;
+        padding: 2px 6px;
+        font-size: 10px;
         gap: 4px;
     }
+    .header-btn {
+        padding: 3px 8px !important;
+        font-size: 11px !important;
+        height: 28px !important;
+        gap: 4px !important;
+    }
 
-    /* Fixed Bottom Navigation (Kafr Sakr Style — iPhone Safe-Area Compliant) */
+    /* Fixed Bottom Navigation (Kafr Sakr Style — Compact & iPhone Safe-Area Compliant) */
     .nav-tabs {
         position: fixed;
         bottom: 0;
@@ -304,17 +317,17 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 8px 0;
-        gap: 3px;
+        padding: 6px 0;
+        gap: 2px;
         border-bottom: none;
         border-top: 2px solid transparent;
-        font-size: 11px;
+        font-size: 10.5px;
         color: var(--color-text-muted);
         height: var(--bottom-nav-height);
         touch-action: manipulation;
     }
     .tab-btn i {
-        font-size: 19px;
+        font-size: 18px;
     }
     .tab-btn.active {
         color: var(--color-primary);
@@ -323,16 +336,20 @@
     }
 
     .main-content {
-        padding: 12px;
+        padding: 8px 10px;
         padding-bottom: var(--total-bottom-offset);
-    }
-
-    /* Prevent iOS Safari unwanted auto-zoom on input focus */
-    input, select, textarea {
-        font-size: 16px !important;
     }
 
     button, .stat-card, .user-mobile-card, .code-mobile-card, .preset-btn {
         touch-action: manipulation;
+    }
+}
+
+.desktop-only {
+    display: inline;
+}
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
     }
 }

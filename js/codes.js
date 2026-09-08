@@ -121,35 +121,32 @@ function displayCodes(codes) {
             </td>
         </tr>`);
 
-        // Mobile Code Card (Zero horizontal scroll, 100% visible, touch-friendly)
+        // Ultra-Compact Mobile Code Card (Single sleek row, height ~44px, zero clutter)
         cardsHtml.push(`
             <div class="code-mobile-card">
-                <div class="code-card-header">
-                    <div class="code-key-pill" onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="اضغط للنسخ">
-                        <i class="ri-key-2-line" style="color:var(--color-primary);"></i>
-                        <span class="code-value">${safeKey}</span>
-                        <i class="ri-file-copy-line copy-hint"></i>
+                <div class="code-card-main" onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="اضغط لنسخ الكود">
+                    <div class="code-pill-row">
+                        <span class="code-mono">${safeKey}</span>
+                        <i class="ri-file-copy-line copy-icon"></i>
                     </div>
-                    ${statusBadge}
+                    <div class="code-meta-row">
+                        <span class="code-dur">${durationText}</span>
+                        <span class="meta-dot">•</span>
+                        ${statusBadge}
+                    </div>
                 </div>
-                <div class="code-card-footer">
-                    <div class="code-duration-info">
-                        <span class="meta-label">المدة:</span>
-                        ${durationText}
-                    </div>
-                    <div class="code-card-actions">
-                        ${c.status === 'active'
-                            ? `<button class="btn-secondary code-action-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت">
-                                <i class="ri-pause-line"></i> إيقاف
-                               </button>`
-                            : `<button class="btn-secondary code-action-btn" onclick="activateCode('${safeKey}')" title="إعادة تفعيل" style="color:#60A5FA; border-color:rgba(59,130,246,0.3);">
-                                <i class="ri-play-line"></i> تفعيل
-                               </button>`
-                        }
-                        <button class="btn-danger code-action-btn delete" onclick="deleteCode('${safeKey}')" title="حذف الكود">
-                            <i class="ri-delete-bin-line"></i> حذف
-                        </button>
-                    </div>
+                <div class="code-card-actions">
+                    ${c.status === 'active'
+                        ? `<button class="code-mini-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت">
+                            <i class="ri-pause-line"></i>
+                           </button>`
+                        : `<button class="code-mini-btn reactivate" onclick="activateCode('${safeKey}')" title="إعادة تفعيل">
+                            <i class="ri-play-line"></i>
+                           </button>`
+                    }
+                    <button class="code-mini-btn delete" onclick="deleteCode('${safeKey}')" title="حذف الكود">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
                 </div>
             </div>
         `);

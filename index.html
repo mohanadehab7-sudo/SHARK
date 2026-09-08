@@ -64,15 +64,15 @@
     <!-- Header (Kafr Sakr Style) -->
     <header class="app-header">
         <div class="header-brand">
-            <img src="ic_splash_logo.png" alt="SHARK" width="30" height="30" style="border-radius:50%; object-fit:cover; border:1px solid rgba(59,130,246,0.4); display:block;">
-            <span style="letter-spacing: 1.5px; font-weight: 900;">SHARK</span>
+            <img src="ic_splash_logo.png" alt="" aria-hidden="true" width="24" height="24" style="border-radius:50%; object-fit:cover; border:1px solid rgba(59,130,246,0.4); display:block;">
+            <span style="letter-spacing: 1px; font-weight: 900; font-size:14px;">SHARK</span>
         </div>
         <div class="header-right">
             <div class="header-online" id="headerStatusPill" aria-label="حالة النظام"><span class="online-pulse"></span> <span id="headerStatusText">متصل</span></div>
-            <button id="refreshAllBtn" class="btn-secondary" style="padding:6px 12px; font-size:12px;" title="تحديث" aria-label="تحديث">
+            <button id="refreshAllBtn" class="btn-secondary header-btn" title="تحديث" aria-label="تحديث">
                 <i class="ri-refresh-line" aria-hidden="true"></i> تحديث
             </button>
-            <button id="logoutBtn" class="logout-btn" aria-label="تسجيل الخروج">
+            <button id="logoutBtn" class="logout-btn header-btn" aria-label="تسجيل الخروج">
                 <i class="ri-logout-box-r-line" aria-hidden="true"></i> خروج
             </button>
         </div>
@@ -118,15 +118,15 @@
 
             <div class="section-header" style="margin-top: 16px;">
                 <h2><i class="ri-smartphone-line" aria-hidden="true"></i> المشتركين <span id="filteredCount" class="count-badge"></span></h2>
-                <div class="filters">
+                <div class="filters users-filters">
                     <div class="search-box">
                         <i class="ri-search-line" aria-hidden="true"></i>
                         <input type="text" id="userSearch" placeholder="بحث..." aria-label="بحث عن مستخدم">
                     </div>
-                    <select id="userFilter" aria-label="تصفية المشتركين">
+                    <select id="userFilter" class="filter-select" aria-label="تصفية المشتركين">
                         <option value="all">الكل</option>
                         <option value="most_active">النشطة</option>
-                        <option value="expired_or_expiring">قريب الانتهاء / منتهي</option>
+                        <option value="expired_or_expiring">منتهي</option>
                         <option value="blocked">المحظورة</option>
                     </select>
                 </div>
@@ -162,18 +162,22 @@
             <div class="section-header">
                 <h2><i class="ri-key-2-line" aria-hidden="true"></i> الأكواد <span id="codesCount" class="count-badge"></span></h2>
                 <div class="filters codes-filters">
-                    <button id="openQuickCodeModalBtn" class="btn-primary" onclick="openQuickCodeModal()">
-                        <i class="ri-flashlight-line" aria-hidden="true"></i> توليد كود
+                    <button id="openQuickCodeModalBtn" class="btn-primary" onclick="openQuickCodeModal()" title="توليد كود جديد">
+                        <i class="ri-flashlight-line" aria-hidden="true"></i> <span>توليد</span><span class="desktop-only"> كود</span>
                     </button>
                     <select id="codesFilter" class="filter-select" aria-label="تصفية الأكواد">
                         <option value="all">الكل</option>
-                        <option value="available">المتاحة فقط</option>
+                        <option value="available">المتاحة</option>
                         <option value="used">المستخدمة</option>
                         <option value="trial">تجربة</option>
                         <option value="lifetime">مدى الحياة</option>
                     </select>
-                    <button id="copyAvailableBtn" class="btn-secondary" aria-label="نسخ الأكواد المتاحة"><i class="ri-file-copy-line" aria-hidden="true"></i> نسخ المتاحة</button>
-                    <button id="deleteUnusedCodesBtn" class="btn-danger" onclick="deleteUnusedCodes()" title="حذف الأكواد غير المستخدمة"><i class="ri-delete-bin-line" aria-hidden="true"></i> حذف غير المستخدمة</button>
+                    <button id="copyAvailableBtn" class="btn-secondary" title="نسخ الأكواد المتاحة" aria-label="نسخ الأكواد المتاحة">
+                        <i class="ri-file-copy-line" aria-hidden="true"></i> <span>نسخ</span><span class="desktop-only"> المتاحة</span>
+                    </button>
+                    <button id="deleteUnusedCodesBtn" class="btn-danger" onclick="deleteUnusedCodes()" title="حذف الأكواد غير المستخدمة">
+                        <i class="ri-delete-bin-line" aria-hidden="true"></i> <span>حذف</span><span class="desktop-only"> غير المستخدمة</span>
+                    </button>
                 </div>
             </div>
 
@@ -468,16 +472,16 @@
 
 <!-- Core Supabase & App Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=10.1"></script>
-<script src="js/api.js?v=10.1"></script>
-<script src="js/ui.js?v=10.1"></script>
-<script src="js/auth.js?v=10.1"></script>
-<script src="js/dashboard.js?v=10.1"></script>
-<script src="js/users.js?v=10.1"></script>
-<script src="js/messages.js?v=10.1"></script>
-<script src="js/renew.js?v=10.1"></script>
-<script src="js/codes.js?v=10.1"></script>
-<script src="js/settings.js?v=10.1"></script>
-<script src="js/app.js?v=10.1"></script>
+<script src="config.js?v=10.3"></script>
+<script src="js/api.js?v=10.3"></script>
+<script src="js/ui.js?v=10.3"></script>
+<script src="js/auth.js?v=10.3"></script>
+<script src="js/dashboard.js?v=10.3"></script>
+<script src="js/users.js?v=10.3"></script>
+<script src="js/messages.js?v=10.3"></script>
+<script src="js/renew.js?v=10.3"></script>
+<script src="js/codes.js?v=10.3"></script>
+<script src="js/settings.js?v=10.3"></script>
+<script src="js/app.js?v=10.3"></script>
 </body>
 </html>
