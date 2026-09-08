@@ -12,7 +12,7 @@ function openMsgModal(deviceId) {
     window.SHARK.state.pendingMsgDeviceId = deviceId;
     const input = document.getElementById('msgText');
     if (input) {
-        input.value = 'مرحباً بك! إشعار من إدارة منظومة SHARK: يرجى العلم بوجود تحديث متاح للبوت.';
+        input.value = 'مرحباً بك! إشعار من إدارة SHARK: يرجى العلم بوجود تحديث متاح للبوت.';
     }
     const modal = document.getElementById('msgModal');
     if (modal) modal.style.display = 'flex';
@@ -74,7 +74,6 @@ async function confirmSendMessage() {
 document.getElementById('msgModal')?.addEventListener('click', e => {
     if (e.target.id === 'msgModal') closeMsgModal();
 });
-document.getElementById('msgAllFilteredBtn')?.addEventListener('click', () => openMsgModal('__BULK__'));
 
 // Global expose
 window.openMsgModal = openMsgModal;

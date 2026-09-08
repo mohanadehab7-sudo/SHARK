@@ -37,6 +37,46 @@ function showToast(msg, type = 'info') {
     }, 4000);
 }
 
+function showConfirmDialog(title, message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const okBtn = document.getElementById('confirmModalOkBtn');
+    const cancelBtn = document.getElementById('confirmModalCancelBtn');
+
+    if (!modal) {
+        if (confirm(message)) onConfirm();
+        return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+
+    const cleanup = () => {
+        modal.style.display = 'none';
+        if (okBtn) okBtn.onclick = null;
+        if (cancelBtn) cancelBtn.onclick = null;
+    };
+
+    if (okBtn) {
+        okBtn.onclick = (e) => {
+            e.preventDefault();
+            cleanup();
+            onConfirm();
+        };
+    }
+
+    if (cancelBtn) {
+        cancelBtn.onclick = (e) => {
+            e.preventDefault();
+            cleanup();
+        };
+    }
+
+    modal.style.display = 'flex';
+}
+window.showConfirmDialog = showConfirmDialog;
+
 // ── FORMATTERS ─────────────────────────────────────────────────────────────
 
 function formatRelative(dateStr) {
@@ -138,14 +178,13 @@ window.switchTab = switchTab;
 function initAccessibility() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            // Close any open modals
+            // Close any open active modals
             if (window.closeUserProfile) window.closeUserProfile();
             if (window.closeRenewModal) window.closeRenewModal();
             if (window.closeMsgModal) window.closeMsgModal();
-            if (window.closeScreenshotModal) window.closeScreenshotModal();
-            if (window.closeGalleryModal) window.closeGalleryModal();
-            if (window.closeActionsCard) window.closeActionsCard();
-            if (window.closeUserDetailsModal) window.closeUserDetailsModal();
+            if (window.closeQuickCodeModal) window.closeQuickCodeModal();
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) confirmModal.style.display = 'none';
         }
     });
 }
@@ -162,6 +201,7 @@ window.formatRemainingDays = formatRemainingDays;
 window.SHARK.ui = {
     showLoading,
     showToast,
+    showConfirmDialog,
     formatRelative,
     formatDate,
     formatSubEnd,

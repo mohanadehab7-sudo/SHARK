@@ -378,11 +378,14 @@ async function revokeFromModal() {
     if (!currentModalDeviceId) return;
     const user = window.SHARK.state.usersData?.find(u => u.device_id === currentModalDeviceId);
     const name = user?.device_name || `هاتف (${currentModalDeviceId.substring(0, 8)})`;
-    if (!confirm(`هل تريد إلغاء كود التفعيل المربوط بجهاز "${name}"؟ سيصبح الكود متاحاً مجدداً.`)) return;
-    if (window.revokeDeviceLicense) {
-        await window.revokeDeviceLicense(currentModalDeviceId);
-    }
-    closeUserProfile();
+    const deviceId = currentModalDeviceId;
+
+    showConfirmDialog('فك كود التفعيل', `هل أنت متأكد من إلغاء كود التفعيل المربوط بجهاز "${name}"؟ سيصبح الكود متاحاً مجدداً.`, async () => {
+        if (window.revokeDeviceLicense) {
+            await window.revokeDeviceLicense(deviceId);
+        }
+        closeUserProfile();
+    });
 }
 
 function showDeleteConfirm() {
@@ -409,38 +412,59 @@ async function deleteUserFromModal() {
 // ── USER CRUD ACTIONS ─────────────────────────────────────────────────────
 
 async function blockUser(deviceId) {
-    const banMsg = "تم حظر جهازك من استخدام البوت. يرجى مراجعة الإدارة.";
-    await window.sb.from('devices').update({ status: 'banned', message: banMsg }).eq('device_id', deviceId);
-    showToast('تم حظر الجهاز بنجاح', 'success');
-    await loadUsersData();
-    window.SHARK.dashboard?.loadDashboardData();
+    showLoading(true);
+    try {
+        const banMsg = "تم حظر جهازك من استخدام البوت. يرجى مراجعة الإدارة.";
+        const { error } = await window.sb.from('devices').update({ status: 'banned', message: banMsg }).eq('device_id', deviceId);
+        if (error) throw error;
+        showToast('تم حظر الجهاز بنجاح', 'success');
+        await loadUsersData();
+        window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Block user error:", err);
+        showToast('فشل حظر الجهاز: ' + (err.message || err), 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 async function unblockUser(deviceId) {
-    await window.sb.from('devices').update({ status: 'active' }).eq('device_id', deviceId);
-    showToast('تم رفع الحظر عن الجهاز بنجاح', 'success');
-    await loadUsersData();
-    window.SHARK.dashboard?.loadDashboardData();
+    showLoading(true);
+    try {
+        const { error } = await window.sb.from('devices').update({ status: 'active' }).eq('device_id', deviceId);
+        if (error) throw error;
+        showToast('تم رفع الحظر عن الجهاز بنجاح', 'success');
+        await loadUsersData();
+        window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Unblock user error:", err);
+        showToast('فشل رفع الحظر: ' + (err.message || err), 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 async function deleteUser(deviceId) {
-    await window.sb.from('devices').delete().eq('device_id', deviceId);
-    showToast('تم حذف الجهاز نهائياً', 'success');
-    await loadUsersData();
-    window.SHARK.dashboard?.loadDashboardData();
+    showLoading(true);
+    try {
+        // Unlink any license associated with this device first
+        await window.sb.from('licenses').update({ device_id: null }).eq('device_id', deviceId);
+        const { error } = await window.sb.from('devices').delete().eq('device_id', deviceId);
+        if (error) throw error;
+        showToast('تم حذف الجهاز نهائياً بنجاح', 'success');
+        await loadUsersData();
+        window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Delete user error:", err);
+        showToast('فشل حذف الجهاز: ' + (err.message || err), 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // Event Listeners
 document.getElementById('userFilter')?.addEventListener('change', applyUserFilter);
 document.getElementById('userSearch')?.addEventListener('input', applyUserFilter);
-document.getElementById('refreshUsersBtn')?.addEventListener('click', async () => {
-    showLoading(true);
-    await window.SHARK.codes?.loadCodesData();
-    await loadUsersData();
-    window.SHARK.dashboard?.loadExpiryTable();
-    showLoading(false);
-    showToast('تم تحديث قائمة المستخدمين', 'success');
-});
 
 document.getElementById('unifiedUserModal')?.addEventListener('click', e => {
     if (e.target.id === 'unifiedUserModal') closeUserProfile();

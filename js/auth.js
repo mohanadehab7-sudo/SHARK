@@ -6,7 +6,7 @@
 window.SHARK = window.SHARK || {};
 
 function initAuth() {
-    const loginScreen = document.getElementById('loginOverlay') || document.getElementById('loginScreen');
+    const loginScreen = document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
@@ -30,7 +30,10 @@ function initAuth() {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('loginEmail');
-            const email = emailInput ? emailInput.value.trim() : '';
+            let email = emailInput ? emailInput.value.trim() : '';
+            if (email && !email.includes('@')) {
+                email = email + '@gmail.com';
+            }
             const password = document.getElementById('loginPassword')?.value || '';
 
             showLoading(true);
@@ -44,9 +47,8 @@ function initAuth() {
                 showMainApp();
                 showToast('تم تسجيل الدخول بنجاح', 'success');
             } catch (err) {
-                console.error("Login failed:", err);
                 if (loginError) {
-                    loginError.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة، أو لا تملك صلاحيات كمدير.';
+                    loginError.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة، أو لا تملك صلاحيات كمدير.';
                     loginError.style.display = 'block';
                 }
                 showToast('تعذر تسجيل الدخول، تحقق من البيانات المدخلة', 'error');
@@ -85,7 +87,7 @@ function initAuth() {
 }
 
 function showMainApp() {
-    const loginScreen = document.getElementById('loginOverlay') || document.getElementById('loginScreen');
+    const loginScreen = document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
     const welcomeUser = document.getElementById('welcomeUser');
 

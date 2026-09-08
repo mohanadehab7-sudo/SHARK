@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Initialize Modals & Forms
     window.SHARK.renew?.initRenewModal();
-    window.SHARK.codes?.initCodeGenerator();
     window.SHARK.settings?.initSettings();
 
     // 3. Initialize Authentication

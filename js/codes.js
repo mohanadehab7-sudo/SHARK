@@ -128,192 +128,25 @@ async function activateCode(key) {
 }
 
 async function deleteCode(key) {
-    if (!confirm('هل تريد حذف هذا الكود نهائياً؟')) return;
-    showLoading(true);
-    try {
-        const { error } = await window.sb.from('licenses').delete().eq('license_key', key);
-        if (error) throw error;
-        showToast('تم حذف الكود بنجاح', 'success');
-        await loadCodesData();
-        await window.SHARK.dashboard?.loadDashboardData();
-    } catch (err) {
-        console.error("Delete code error:", err);
-        showToast('فشل حذف الكود: ' + (err.message || err), 'error');
-    } finally {
-        showLoading(false);
-    }
-}
-
-// ── CODE GENERATOR ────────────────────────────────────────────────────────
-
-function initCodeGenerator() {
-    const generatorState = window.SHARK.state.generatorState;
-
-    document.querySelectorAll('.dtype-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.dtype-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            generatorState.type = btn.dataset.type;
-
-            ['preset', 'custom', 'date', 'lifetime'].forEach(t => {
-                const el = document.getElementById(t + 'Panel');
-                if (el) el.style.display = t === btn.dataset.type ? 'block' : 'none';
-            });
-
-            if (btn.dataset.type === 'lifetime') generatorState.days = null;
-            updateSummary();
-        });
-    });
-
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            generatorState.days = parseFloat(btn.dataset.days);
-            generatorState.isTrial = generatorState.days === 0.125;
-            updateSummary();
-        });
-    });
-
-    document.getElementById('customValue')?.addEventListener('input', updateCustom);
-    document.getElementById('customUnit')?.addEventListener('change', updateCustom);
-
-    const expiry = document.getElementById('expiryDate');
-    if (expiry) {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        expiry.min = tomorrow.toISOString().split('T')[0];
-        expiry.addEventListener('change', () => {
-            generatorState.expiryDate = expiry.value;
-            const diffMs = new Date(expiry.value) - new Date();
-            const diffDays = Math.ceil(diffMs / 86400000);
-            generatorState.days = diffDays;
-            generatorState.customHours = null;
-            const previewEl = document.getElementById('datePreview');
-            if (previewEl) previewEl.textContent = `بعد ${diffDays} يوم`;
-            updateSummary();
-        });
-    }
-
-    document.getElementById('generateCodesMainBtn')?.addEventListener('click', generateCodes);
-    document.getElementById('codeCount')?.addEventListener('input', updateSummary);
-    updateSummary();
-}
-
-function updateCustom() {
-    const generatorState = window.SHARK.state.generatorState;
-    const valInput = document.getElementById('customValue');
-    let val = parseInt(valInput?.value) || 1;
-    const unit = document.getElementById('customUnit')?.value;
-
-    if (unit === 'hours' && val > 8760) { val = 8760; if (valInput) valInput.value = 8760; }
-    if (unit === 'days' && val > 3650) { val = 3650; if (valInput) valInput.value = 3650; }
-    if (unit === 'months' && val > 120) { val = 120; if (valInput) valInput.value = 120; }
-    if (val < 1) { val = 1; if (valInput) valInput.value = 1; }
-
-    const previewEl = document.getElementById('customPreview');
-
-    if (unit === 'hours') {
-        generatorState.days = val / 24;
-        generatorState.customHours = val;
-        if (previewEl) previewEl.textContent = `= ${val} ساعة`;
-    } else if (unit === 'months') {
-        generatorState.days = val * 30;
-        generatorState.customHours = null;
-        if (previewEl) previewEl.textContent = `= ${generatorState.days} يوم (${val} شهر)`;
-    } else {
-        generatorState.days = val;
-        generatorState.customHours = null;
-        if (previewEl) previewEl.textContent = `= ${val} يوم`;
-    }
-    updateSummary();
-}
-
-function updateSummary() {
-    const generatorState = window.SHARK.state.generatorState;
-    const count = parseInt(document.getElementById('codeCount')?.value) || 1;
-    const type = generatorState.type;
-    let dur;
-
-    if (type === 'lifetime') {
-        dur = 'مدى الحياة';
-    } else if (type === 'preset' && generatorState.days === 0.125) {
-        dur = '3 ساعات تجربة';
-    } else if (type === 'date' && generatorState.expiryDate) {
-        dur = `حتى ${new Date(generatorState.expiryDate).toLocaleDateString('ar-EG')}`;
-    } else if (generatorState.customHours) {
-        dur = `${generatorState.customHours} ساعة`;
-    } else {
-        const d = generatorState.days || 30;
-        dur = d >= 30 && d % 30 === 0 ? `${d / 30} شهر` : `${d} يوم`;
-    }
-
-    const summaryEl = document.getElementById('summaryText');
-    if (summaryEl) {
-        summaryEl.textContent = `سيتم توليد ${count} كود ${count > 1 ? 'صالحة' : 'صالح'} لـ ${dur}`;
-    }
-}
-
-function adjustCount(d) {
-    const el = document.getElementById('codeCount');
-    if (el) {
-        el.value = Math.max(1, Math.min(100, parseInt(el.value) + d));
-        updateSummary();
-    }
-}
-
-function setCount(n) {
-    const el = document.getElementById('codeCount');
-    if (el) {
-        el.value = n;
-        updateSummary();
-    }
-}
-
-async function generateCodes() {
-    const generatorState = window.SHARK.state.generatorState;
-    const count = parseInt(document.getElementById('codeCount')?.value) || 1;
-    showLoading(true);
-
-    try {
-        const rows = [];
-        for (let i = 0; i < count; i++) {
-            const key = rndNum(12);
-            let expiresAt = '2099-01-01T00:00:00.000Z';
-            let durDays = generatorState.days || 30;
-
-            if (generatorState.type === 'lifetime') {
-                expiresAt = '2099-01-01T00:00:00.000Z';
-                durDays = 36500;
-            } else if (generatorState.type === 'date' && generatorState.expiryDate) {
-                expiresAt = new Date(generatorState.expiryDate + 'T23:59:59').toISOString();
-                durDays = null;
-            } else if (generatorState.customHours) {
-                durDays = generatorState.customHours / 24.0;
-            } else {
-                durDays = generatorState.days || 30;
-            }
-
-            rows.push({
-                license_key: key,
-                expires_at: expiresAt,
-                duration_days: durDays,
-                status: 'active'
-            });
+    if (!key) return;
+    showConfirmDialog('حذف الكود', `هل أنت متأكد من حذف الكود ${key} نهائياً؟`, async () => {
+        showLoading(true);
+        try {
+            const { error } = await window.sb.from('licenses').delete().eq('license_key', key);
+            if (error) throw error;
+            showToast(`تم حذف الكود (${key}) بنجاح`, 'success');
+            await loadCodesData();
+            await window.SHARK.dashboard?.loadDashboardData();
+        } catch (err) {
+            console.error("Delete code error:", err);
+            showToast('فشل حذف الكود: ' + (err.message || err), 'error');
+        } finally {
+            showLoading(false);
         }
-
-        const { error } = await window.sb.from('licenses').insert(rows);
-        if (error) throw error;
-
-        showToast(`تم توليد ${count} كود بنجاح`, 'success');
-        loadCodesData();
-        window.SHARK.dashboard?.loadDashboardData();
-    } catch (err) {
-        showToast('خطأ في توليد الأكواد: ' + err.message, 'error');
-    } finally {
-        showLoading(false);
-    }
+    });
 }
+
+// ── EVENT LISTENERS ────────────────────────────────────────────────────────
 
 // Event Listeners
 document.getElementById('codesFilter')?.addEventListener('change', applyCodesFilter);
@@ -414,27 +247,33 @@ async function deleteUnusedCodes() {
             .map(c => c.license_key);
 
         if (!unusedKeys.length) {
-            showToast('لا توجد أكواد غير مستخدمة لحذفها', 'info');
+            showToast('لا توجد أكواد غير مستخدمة لحذفها حالياً', 'info');
             return;
         }
 
-        if (!confirm(`هل أنت متأكد من حذف ${unusedKeys.length} كود غير مستخدم نهائياً؟`)) {
-            return;
-        }
+        showConfirmDialog('حذف الأكواد غير المستخدمة', `هل أنت متأكد من حذف جميع الأكواد غير المستخدمة (${unusedKeys.length} كود) نهائياً من قاعدة البيانات؟`, async () => {
+            showLoading(true);
+            try {
+                // Delete in safe chunks of 25 keys
+                for (let i = 0; i < unusedKeys.length; i += 25) {
+                    const chunk = unusedKeys.slice(i, i + 25);
+                    const { error: delErr } = await window.sb.from('licenses').delete().in('license_key', chunk);
+                    if (delErr) throw delErr;
+                }
 
-        // Delete in safe chunks of 25 keys
-        for (let i = 0; i < unusedKeys.length; i += 25) {
-            const chunk = unusedKeys.slice(i, i + 25);
-            const { error: delErr } = await window.sb.from('licenses').delete().in('license_key', chunk);
-            if (delErr) throw delErr;
-        }
-
-        showToast(`تم حذف ${unusedKeys.length} كود غير مستخدم بنجاح`, 'success');
-        await loadCodesData();
-        await window.SHARK.dashboard?.loadDashboardData();
+                showToast(`تم حذف ${unusedKeys.length} كود غير مستخدم بنجاح`, 'success');
+                await loadCodesData();
+                await window.SHARK.dashboard?.loadDashboardData();
+            } catch (err) {
+                console.error("Delete unused codes error:", err);
+                showToast('فشل حذف الأكواد: ' + (err.message || err), 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
     } catch (err) {
         console.error("Delete unused codes error:", err);
-        showToast('فشل حذف الأكواد: ' + (err.message || err), 'error');
+        showToast('فشل قراءة الأكواد: ' + (err.message || err), 'error');
     } finally {
         showLoading(false);
     }
@@ -447,10 +286,6 @@ window.loadCodesData = loadCodesData;
 window.suspendCode = suspendCode;
 window.activateCode = activateCode;
 window.deleteCode = deleteCode;
-window.initCodeGenerator = initCodeGenerator;
-window.adjustCount = adjustCount;
-window.setCount = setCount;
-window.generateCodes = generateCodes;
 
 window.SHARK.codes = {
     rndNum,
@@ -460,8 +295,7 @@ window.SHARK.codes = {
     suspendCode,
     activateCode,
     deleteCode,
-    initCodeGenerator,
-    generateCodes,
+    quickGenerateCode,
     openQuickCodeModal,
     closeQuickCodeModal,
     quickGenerateAndClose,

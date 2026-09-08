@@ -11,18 +11,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <title>منظومة إدارة البوت — SHARK</title>
+    <title>SHARK</title>
     
     <!-- PWA Web App Manifest -->
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M8 40 Q18 28 30 30 Q44 32 56 38 Q44 46 30 46 Q16 46 8 40Z' fill='%233B82F6'/><path d='M28 30 L22 12 Q24 16 30 20 L34 30Z' fill='%233B82F6'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M50 16 C48 24 42 34 34 40 L58 40 C58 32 56 22 50 16 Z' fill='%233B82F6'/><path d='M12 50 C24 45 42 38 68 40 C82 41 92 47 95 50 C86 53 76 56 62 56 C44 56 26 60 12 50 Z' fill='%233B82F6'/><path d='M46 56 L30 76 C36 72 44 64 48 58 Z' fill='%232563EB'/><path d='M16 51 L4 28 C9 38 13 46 14 50 C13 54 9 62 4 72 Z' fill='%233B82F6'/><circle cx='76' cy='48' r='2' fill='%23FFFFFF'/></svg>">
 
     <!-- Fonts & Vector Icons (Kafr Sakr Sovereign Standard) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-    <link rel="stylesheet" href="style.css?v=9.0">
+    <link rel="stylesheet" href="style.css?v=9.6">
 </head>
 <body>
 
@@ -31,21 +31,34 @@
     <div class="login-box">
         <div class="login-logo">
             <div class="login-logo-circle" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" fill="none">
-                    <path d="M8 40 Q18 28 30 30 Q44 32 56 38 Q44 46 30 46 Q16 46 8 40Z" fill="#3B82F6"/>
-                    <path d="M28 30 L22 12 Q24 16 30 20 L34 30Z" fill="#3B82F6"/>
-                    <path d="M54 36 L62 28 L62 48 L54 41Z" fill="#3B82F6" opacity="0.85"/>
-                    <circle cx="18" cy="38" r="2.5" fill="#0B0F17"/>
-                    <path d="M22 38 L16 48 Q22 44 28 42Z" fill="#2563EB"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="46" height="46" fill="none">
+                    <defs>
+                        <linearGradient id="sharkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#60A5FA"/>
+                            <stop offset="50%" stop-color="#3B82F6"/>
+                            <stop offset="100%" stop-color="#1D4ED8"/>
+                        </linearGradient>
+                        <linearGradient id="sharkLight" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#BAE6FD"/>
+                            <stop offset="100%" stop-color="#60A5FA"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M50 16 C48 24, 42 34, 34 40 L58 40 C58 32, 56 22, 50 16 Z" fill="url(#sharkGrad)"/>
+                    <path d="M12 50 C24 45, 42 38, 68 40 C82 41, 92 47, 95 50 C86 53, 76 56, 62 56 C44 56, 26 60, 12 50 Z" fill="url(#sharkGrad)"/>
+                    <path d="M95 50 C86 53, 78 57, 66 59 C52 61, 38 60, 24 53 C36 57, 50 58, 66 57 C78 55, 88 52, 95 50 Z" fill="url(#sharkLight)"/>
+                    <path d="M46 56 L30 76 C36 72, 44 64, 48 58 Z" fill="url(#sharkGrad)"/>
+                    <path d="M16 51 L4 28 C9 38, 13 46, 14 50 C13 54, 9 62, 4 72 Z" fill="url(#sharkGrad)"/>
+                    <path d="M68 45 L65 52 M63 46 L60 53 M58 47 L55 54" stroke="#0B0F17" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M80 46 L74 48 L78 49 Z" fill="#FFFFFF"/>
                 </svg>
             </div>
-            <h1 id="loginTitle">منظومة شارك</h1>
+            <h1 id="loginTitle" style="letter-spacing: 2px; font-weight: 900;">SHARK</h1>
             <p>تسجيل الدخول</p>
         </div>
         <form id="loginForm" autocomplete="on">
             <div class="login-input-group">
-                <i class="ri-mail-line" aria-hidden="true"></i>
-                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required autocomplete="email" dir="ltr" aria-label="البريد الإلكتروني" style="direction:ltr; text-align:left;">
+                <i class="ri-user-line" aria-hidden="true"></i>
+                <input type="text" id="loginEmail" placeholder="اسم المستخدم" required autocomplete="username" dir="ltr" aria-label="اسم المستخدم" style="direction:ltr; text-align:left;">
             </div>
             <div class="login-input-group">
                 <i class="ri-lock-line" aria-hidden="true"></i>
@@ -57,10 +70,9 @@
             <div id="loginError" class="login-error" style="display:none;" role="alert"></div>
             <button type="submit" class="login-btn" id="loginSubmitBtn">
                 <i class="ri-login-box-line" aria-hidden="true"></i>
-                <span>تسجيل الدخول للنظام</span>
+                <span>تسجيل الدخول</span>
             </button>
         </form>
-        <div class="login-footer">SHARK BOT ADMIN SYSTEM</div>
     </div>
 </div>
 
@@ -70,14 +82,16 @@
     <!-- Header (Kafr Sakr Style) -->
     <header class="app-header">
         <div class="header-brand">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" fill="none" aria-hidden="true">
-                <path d="M8 40 Q18 28 30 30 Q44 32 56 38 Q44 46 30 46 Q16 46 8 40Z" fill="#3B82F6"/>
-                <path d="M28 30 L22 12 Q24 16 30 20 L34 30Z" fill="#3B82F6"/>
-                <path d="M54 36 L62 28 L62 48 L54 41Z" fill="#3B82F6" opacity="0.85"/>
-                <circle cx="18" cy="38" r="2.5" fill="#0B0F17"/>
-                <path d="M22 38 L16 48 Q22 44 28 42Z" fill="#2563EB"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30" height="30" fill="none" aria-hidden="true">
+                <path d="M50 16 C48 24, 42 34, 34 40 L58 40 C58 32, 56 22, 50 16 Z" fill="#3B82F6"/>
+                <path d="M12 50 C24 45, 42 38, 68 40 C82 41, 92 47, 95 50 C86 53, 76 56, 62 56 C44 56, 26 60, 12 50 Z" fill="#3B82F6"/>
+                <path d="M95 50 C86 53, 78 57, 66 59 C52 61, 38 60, 24 53 C36 57, 50 58, 66 57 C78 55, 88 52, 95 50 Z" fill="#93C5FD"/>
+                <path d="M46 56 L30 76 C36 72, 44 64, 48 58 Z" fill="#2563EB"/>
+                <path d="M16 51 L4 28 C9 38, 13 46, 14 50 C13 54, 9 62, 4 72 Z" fill="#3B82F6"/>
+                <path d="M68 45 L65 52 M63 46 L60 53 M58 47 L55 54" stroke="#0B0F17" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="78" cy="48" r="2" fill="#FFFFFF"/>
             </svg>
-            <span>منظومة شارك</span>
+            <span style="letter-spacing: 1.5px; font-weight: 900;">SHARK</span>
         </div>
         <div class="header-right">
             <div class="header-online" id="headerStatusPill" aria-label="حالة النظام"><span class="online-pulse"></span> <span id="headerStatusText">متصل</span></div>
@@ -215,7 +229,7 @@
         <!-- ── TAB: SETTINGS ── -->
         <div id="settings" class="tab-content" role="tabpanel" aria-labelledby="tab-settings" hidden>
             <div class="settings-card">
-                <h2><i class="ri-settings-4-line" aria-hidden="true"></i> إعدادات المنظومة</h2>
+                <h2><i class="ri-settings-4-line" aria-hidden="true"></i> الإعدادات</h2>
 
                 <div class="setting-item">
                     <label for="botMode">وضع التشغيل:</label>
@@ -238,7 +252,7 @@
                     <textarea id="globalMessage" rows="3" placeholder="اكتب رسالة عامة للمستخدمين..."></textarea>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
                         <button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="setGlobalMsgTemplate('ترحيب')">
-                            <i class="ri-sparkling-line"></i> تحديث المنظومة
+                            <i class="ri-sparkling-line"></i> تحديث SHARK
                         </button>
                         <button type="button" class="btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="setGlobalMsgTemplate('تجديد')">
                             <i class="ri-time-line"></i> تذكير تجديد
@@ -248,7 +262,7 @@
                         </button>
                     </div>
                 </div>
-                <button id="saveSettingsBtn" class="neon-generate-btn"><i class="ri-save-line" aria-hidden="true"></i> حفظ الإعدادات</button>
+                <button id="saveSettingsBtn" class="btn-primary" style="width:100%; margin-top:14px; padding:11px; font-size:13px; font-weight:700;"><i class="ri-save-line" aria-hidden="true"></i> حفظ الإعدادات</button>
             </div>
         </div>
 
@@ -346,11 +360,11 @@
 
         <!-- أزرار المدد الجاهزة -->
         <div class="preset-grid" style="margin-bottom:12px;">
-            <button class="preset-btn" data-days="1">24 ساعة</button>
-            <button class="preset-btn" data-days="7">7 أيام</button>
-            <button class="preset-btn active" data-days="30">30 يوم</button>
-            <button class="preset-btn" data-days="90">3 شهور</button>
-            <button class="preset-btn" data-days="0">مدى الحياة</button>
+            <button class="preset-btn renew-preset-btn" data-days="1">24 ساعة</button>
+            <button class="preset-btn renew-preset-btn" data-days="7">7 أيام</button>
+            <button class="preset-btn renew-preset-btn active" data-days="30">30 يوم</button>
+            <button class="preset-btn renew-preset-btn" data-days="90">3 شهور</button>
+            <button class="preset-btn renew-preset-btn" data-days="0">مدى الحياة</button>
         </div>
 
         <!-- مدة مخصصة -->
@@ -450,6 +464,22 @@
     </div>
 </div>
 
+<!-- 5. Custom In-App Confirmation Modal (Never blocked by browsers/webviews) -->
+<div id="confirmModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-box" style="max-width:380px; text-align:center;">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
+        <div style="width:48px; height:48px; border-radius:50%; background:rgba(239,68,68,0.12); color:#F87171; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 12px auto;">
+            <i class="ri-delete-bin-line"></i>
+        </div>
+        <h3 id="confirmModalTitle" style="margin:0 0 6px 0; font-size:16px; color:var(--color-text-primary);">تأكيد الحذف</h3>
+        <p id="confirmModalMessage" style="font-size:13px; color:var(--color-text-secondary); margin:0 0 16px 0; line-height:1.5;">هل أنت متأكد من تنفيذ هذه العملية؟</p>
+        <div style="display:flex; gap:8px;">
+            <button id="confirmModalCancelBtn" class="btn-secondary" style="flex:1; padding:8px; font-size:12px;">إلغاء</button>
+            <button id="confirmModalOkBtn" class="btn-danger" style="flex:1; padding:8px; font-size:12px;">نعم، احذف</button>
+        </div>
+    </div>
+</div>
+
 <!-- Loading Spinner -->
 <div id="loadingSpinner" class="loading-spinner" style="display:none;" role="status" aria-label="جاري التحميل">
     <div class="spinner-ring"></div>
@@ -461,16 +491,16 @@
 
 <!-- Core Supabase & App Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/users.js"></script>
-<script src="js/messages.js"></script>
-<script src="js/renew.js"></script>
-<script src="js/codes.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/app.js"></script>
+<script src="config.js?v=9.6"></script>
+<script src="js/api.js?v=9.6"></script>
+<script src="js/ui.js?v=9.6"></script>
+<script src="js/auth.js?v=9.6"></script>
+<script src="js/dashboard.js?v=9.6"></script>
+<script src="js/users.js?v=9.6"></script>
+<script src="js/messages.js?v=9.6"></script>
+<script src="js/renew.js?v=9.6"></script>
+<script src="js/codes.js?v=9.6"></script>
+<script src="js/settings.js?v=9.6"></script>
+<script src="js/app.js?v=9.6"></script>
 </body>
 </html>
