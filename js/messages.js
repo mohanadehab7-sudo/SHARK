@@ -11,7 +11,9 @@ function openMsgModal(deviceId) {
     pendingMsgDeviceId = deviceId;
     window.SHARK.state.pendingMsgDeviceId = deviceId;
     const input = document.getElementById('msgText');
-    if (input) input.value = '';
+    if (input) {
+        input.value = 'مرحباً بك! إشعار من إدارة منظومة SHARK: يرجى العلم بوجود تحديث متاح للبوت.';
+    }
     const modal = document.getElementById('msgModal');
     if (modal) modal.style.display = 'flex';
 }

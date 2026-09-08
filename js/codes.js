@@ -56,7 +56,7 @@ function displayCodes(codes) {
     if (!tbody) return;
 
     if (!codes.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-cell"><i class="ri-key-2-line"></i> لا توجد أكواد</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-cell"><i class="ri-key-2-line"></i> لا توجد أكواد</td></tr>';
         return;
     }
 
@@ -73,47 +73,43 @@ function displayCodes(codes) {
 
         let durationText;
         if (isTrial) {
-            durationText = '<span style="background:rgba(245,158,11,0.12);color:#FBBF24;border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700;">3 ساعات</span>';
+            durationText = '<span style="background:rgba(245,158,11,0.12);color:#FBBF24;border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;">تجربة</span>';
         } else if (isLifetime) {
-            durationText = '<span style="background:rgba(99,102,241,0.12);color:#818CF8;border:1px solid rgba(99,102,241,0.3);border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700;">مدى الحياة</span>';
+            durationText = '<span style="background:rgba(59,130,246,0.12);color:#60A5FA;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;">مدى الحياة</span>';
         } else if (c.duration_days) {
             let label;
             if (c.duration_days === 7) label = 'أسبوع';
-            else if (c.duration_days === 30) label = 'شهر';
+            else if (c.duration_days === 30) label = 'شهر (30 يوم)';
             else if (c.duration_days === 90) label = '3 شهور';
+            else if (c.duration_days === 365) label = 'سنة';
             else label = `${Math.round(c.duration_days)} يوم`;
-            durationText = `<span style="font-size:13px;color:var(--color-text-primary);font-weight:600;">${label}</span>`;
+            durationText = `<span style="font-size:12px;color:var(--color-text-primary);font-weight:600;">${label}</span>`;
         } else {
             durationText = '<span style="color:var(--color-text-muted);">—</span>';
         }
 
-        let expiryText = '';
-        if (isLifetime && isUsed) expiryText = 'مدى الحياة';
-        else if (!isUsed && (!c.expires_at || c.expires_at.startsWith('2099-01-01'))) expiryText = 'لم يُفعّل بعد';
-        else if (c.expires_at) expiryText = formatDate(c.expires_at);
-        else expiryText = '—';
-
         const safeKey = escapeHtml(c.license_key);
-        const deviceDisplay = c.device_id ? escapeHtml(c.device_id.substring(0, 10)) + '...' : '-';
 
         return `<tr>
-            <td style="color:var(--color-text-muted);">${i + 1}</td>
-            <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:13px;font-weight:700;">
-                ${safeKey}
-                <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="نسخ الكود" class="table-btn" style="padding:2px 6px;margin-right:6px;">
-                    <i class="ri-file-copy-line"></i>
-                </button>
+            <td style="text-align:center;color:var(--color-text-muted);">${i + 1}</td>
+            <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:12px;font-weight:700;">
+                <div style="display:inline-flex;align-items:center;gap:4px;">
+                    <span>${safeKey}</span>
+                    <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="نسخ الكود" class="table-btn" style="padding:2px 6px;">
+                        <i class="ri-file-copy-line"></i>
+                    </button>
+                </div>
             </td>
             <td>${durationText}</td>
             <td>${statusBadge}</td>
-            <td style="font-family:var(--font-family-mono);font-size:11px;color:var(--color-text-muted);">${deviceDisplay}</td>
-            <td style="font-size:12px;color:var(--color-text-secondary);">${expiryText}</td>
-            <td>
-                ${c.status === 'active'
-                    ? `<button class="table-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت"><i class="ri-pause-line"></i></button>`
-                    : `<button class="table-btn" onclick="activateCode('${safeKey}')" title="إعادة تفعيل"><i class="ri-play-line"></i></button>`
-                }
-                <button class="table-btn delete" onclick="deleteCode('${safeKey}')" title="حذف"><i class="ri-delete-bin-line"></i></button>
+            <td style="text-align:center;">
+                <div style="display:inline-flex;gap:4px;justify-content:center;">
+                    ${c.status === 'active'
+                        ? `<button class="table-btn" onclick="suspendCode('${safeKey}')" title="إيقاف مؤقت"><i class="ri-pause-line"></i></button>`
+                        : `<button class="table-btn" onclick="activateCode('${safeKey}')" title="إعادة تفعيل"><i class="ri-play-line"></i></button>`
+                    }
+                    <button class="table-btn delete" onclick="deleteCode('${safeKey}')" title="حذف الكود"><i class="ri-delete-bin-line"></i></button>
+                </div>
             </td>
         </tr>`;
     }).join('');
@@ -361,6 +357,92 @@ async function quickGenerateCode(days, label) {
 window.quickGenerateCode = quickGenerateCode;
 window.quickGenerate30Days = () => quickGenerateCode(30, 'شهر');
 
+// ── Quick Code Generation Modal Handlers ─────────────────────────────────────
+function openQuickCodeModal() {
+    const modal = document.getElementById('quickCodeModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const input = document.getElementById('quickCustomDays');
+        if (input) input.value = '';
+    }
+}
+window.openQuickCodeModal = openQuickCodeModal;
+
+function closeQuickCodeModal() {
+    const modal = document.getElementById('quickCodeModal');
+    if (modal) modal.style.display = 'none';
+}
+window.closeQuickCodeModal = closeQuickCodeModal;
+
+async function quickGenerateAndClose(days, label) {
+    await quickGenerateCode(days, label);
+    closeQuickCodeModal();
+}
+window.quickGenerateAndClose = quickGenerateAndClose;
+
+async function generateCustomDaysCode() {
+    const input = document.getElementById('quickCustomDays');
+    const days = parseInt(input?.value, 10);
+    if (!days || days < 1) {
+        showToast('يرجى كتابة عدد أيام صحيح (يوم واحد على الأقل)', 'warning');
+        return;
+    }
+    await quickGenerateCode(days, `${days} يوم`);
+    closeQuickCodeModal();
+}
+window.generateCustomDaysCode = generateCustomDaysCode;
+
+// ── Robust Deletion of Unused Codes ──────────────────────────────────────────
+async function deleteUnusedCodes() {
+    // 1. Gather keys from active memory state
+    const codes = window.SHARK.state.codesData || [];
+    let unusedKeys = codes
+        .filter(c => !c.device_id || c.device_id.trim() === '')
+        .map(c => c.license_key);
+
+    // 2. Double check directly with DB if state is empty
+    if (!unusedKeys.length) {
+        try {
+            const { data, error } = await window.sb.from('licenses').select('license_key, device_id');
+            if (!error && data) {
+                unusedKeys = data
+                    .filter(c => !c.device_id || c.device_id.trim() === '')
+                    .map(c => c.license_key);
+            }
+        } catch (e) {
+            console.error("DB check error:", e);
+        }
+    }
+
+    if (!unusedKeys.length) {
+        showToast('لا توجد أكواد غير مستخدمة لحذفها', 'info');
+        return;
+    }
+
+    if (!confirm(`هل أنت متأكد من حذف ${unusedKeys.length} كود غير مستخدم نهائياً؟`)) return;
+
+    showLoading(true);
+    try {
+        // Delete in safe chunks of 40 keys to avoid URL parameter limits
+        const chunkSize = 40;
+        for (let i = 0; i < unusedKeys.length; i += chunkSize) {
+            const chunk = unusedKeys.slice(i, i + chunkSize);
+            const { error } = await window.sb.from('licenses').delete().in('license_key', chunk);
+            if (error) throw error;
+        }
+
+        showToast(`تم حذف ${unusedKeys.length} كود غير مستخدم بنجاح`, 'success');
+        await loadCodesData();
+        await window.SHARK.dashboard?.loadDashboardData();
+    } catch (err) {
+        console.error("Delete unused codes error:", err);
+        showToast('فشل حذف الأكواد: ' + err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+window.deleteUnusedCodes = deleteUnusedCodes;
+
 // Expose globals
 window.rndNum = rndNum;
 window.loadCodesData = loadCodesData;
@@ -381,5 +463,11 @@ window.SHARK.codes = {
     activateCode,
     deleteCode,
     initCodeGenerator,
-    generateCodes
+    generateCodes,
+    openQuickCodeModal,
+    closeQuickCodeModal,
+    quickGenerateAndClose,
+    generateCustomDaysCode,
+    deleteUnusedCodes
 };
+

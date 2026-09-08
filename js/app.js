@@ -12,7 +12,6 @@ async function loadAllData() {
         await window.SHARK.dashboard?.loadDashboardData();
         await window.SHARK.codes?.loadCodesData();
         await window.SHARK.users?.loadUsersData();
-        window.SHARK.dashboard?.loadExpiryTable();
     } catch (err) {
         console.error("Pipeline load failed:", err);
         showToast('حدث خطأ أثناء مزامنة البيانات', 'error');

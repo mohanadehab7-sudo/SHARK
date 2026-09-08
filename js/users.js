@@ -112,14 +112,15 @@ function displayUsers(users) {
     if (!tbody && !cardsContainer) return;
 
     if (!users.length) {
-        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="loading-cell"><i class="fas fa-inbox"></i> لا يوجد مستخدمون مسجلون</td></tr>';
-        if (cardsContainer) cardsContainer.innerHTML = '<div style="text-align:center; padding:36px; color:var(--muted);"><i class="fas fa-inbox fa-2x" style="margin-bottom:8px;"></i><p>لا يوجد مستخدمون مسجلون</p></div>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="loading-cell"><i class="ri-inbox-line"></i> لا يوجد مشتركين</td></tr>';
+        if (cardsContainer) cardsContainer.innerHTML = '<div style="text-align:center; padding:36px; color:var(--color-text-muted);"><i class="ri-inbox-line" style="font-size:24px;margin-bottom:8px;display:block;"></i><p>لا يوجد مشتركين</p></div>';
         return;
     }
 
     const codesData = window.SHARK.state.codesData || [];
     const settingsData = window.SHARK.state.settingsData;
     const mode = settingsData?.bot_mode || 'subscription';
+    const now = new Date();
 
     // Process user rows & cards data
     const rowsHtml = [];
@@ -127,108 +128,85 @@ function displayUsers(users) {
 
     users.forEach((u, i) => {
         const lic = codesData.find(c => c.device_id === u.device_id && c.status !== 'suspended');
-        const isOnline = u.last_seen && (new Date() - new Date(u.last_seen)) < 300000;
+        const isOnline = u.last_seen && (now - new Date(u.last_seen)) < 300000;
         const onlineDot = isOnline 
             ? '<span class="online-dot" title="متصل الآن"></span>' 
             : '<span class="offline-dot" title="غير متصل"></span>';
-        const statusBadge = u.status === 'active' 
-            ? '<span class="badge badge-active">نشط</span>' 
-            : '<span class="badge badge-banned">محظور</span>';
-
-        let subEnd = '<span class="badge badge-expired">بدون ترخيص</span>';
-        let remainingCell = '<span style="color:var(--color-text-muted);font-size:11px;">—</span>';
+        
+        // Remaining text strictly in days only
+        let remainingText = '—';
 
         if (lic) {
-            if (!lic.expires_at) {
-                subEnd = '<span class="badge badge-lifetime">مدى الحياة</span>';
-                remainingCell = '<span class="badge badge-lifetime" style="font-size:10px;">دائم</span>';
+            if (!lic.expires_at || lic.duration_days >= 36500) {
+                remainingText = '<span style="color:var(--color-primary);font-weight:700;">دائم</span>';
             } else {
-                subEnd = formatSubEnd(lic.expires_at);
-                remainingCell = formatRemainingDays(lic.expires_at);
+                const diff = new Date(lic.expires_at) - now;
+                if (diff < 0) {
+                    remainingText = '<span style="color:var(--color-status-danger);font-weight:700;">منتهي</span>';
+                } else {
+                    const days = Math.floor(diff / 86400000);
+                    if (days === 0) {
+                        remainingText = '<span style="color:var(--color-status-warning);font-weight:700;">اليوم</span>';
+                    } else {
+                        remainingText = `<span>متبقي ${days} يوم</span>`;
+                    }
+                }
             }
         } else if (mode === 'free') {
-            subEnd = '<span style="color:#10B981;">مجاني</span>';
-            remainingCell = '<span style="color:#10B981;">دائم</span>';
+            remainingText = '<span style="color:var(--color-primary);font-weight:700;">دائم</span>';
         } else if (mode === 'trial') {
             const created = u.created_at ? new Date(u.created_at) : new Date();
             const trialEnd = new Date(created.getTime() + 24 * 3600000);
-            const msLeft = trialEnd - new Date();
-            const hoursLeft = msLeft / 3600000;
-            if (hoursLeft > 0) {
-                subEnd = `<span class="badge badge-active" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);"><i class="ri-time-line" style="margin-left:3px;"></i>تجربة (${hoursLeft.toFixed(1)}س)</span>`;
-                remainingCell = `<span style="color:#38BDF8;font-weight:700;font-size:11px;">${hoursLeft.toFixed(1)}س</span>`;
+            const diff = trialEnd - now;
+            if (diff < 0) {
+                remainingText = '<span style="color:var(--color-status-danger);font-weight:700;">منتهي</span>';
             } else {
-                subEnd = '<span class="badge badge-expired"><i class="ri-time-line" style="margin-left:3px;"></i>انتهت التجربة</span>';
-                remainingCell = '<span style="color:var(--danger);font-size:11px;">منتهي</span>';
+                remainingText = `<span>تجربة (أقل من يوم)</span>`;
             }
         } else if (mode === 'shutdown') {
-            subEnd = '<span class="badge badge-banned"><i class="ri-shut-down-line" style="margin-left:3px;"></i>موقوف</span>';
-            remainingCell = '<span style="color:var(--color-text-muted);font-size:11px;">—</span>';
+            remainingText = '<span style="color:var(--color-status-danger);font-weight:700;">موقوف</span>';
+        } else {
+            remainingText = '<span style="color:var(--color-status-danger);font-weight:700;">منتهي</span>';
         }
 
-        const safeName = escapeHtml(u.device_name || 'غير معروف');
-        const safeId = escapeHtml(u.device_id);
-        const safeIdShort = safeId.substring(0, 10);
-        const deviceDisplay = safeName !== 'غير معروف' ? safeName : `هاتف (${safeId.substring(0, 8)})`;
+        const safeName = escapeHtml(u.device_name || '');
+        const safeId = escapeHtml(u.device_id || '');
+        const deviceDisplay = safeName || `هاتف (${safeId.substring(0, 8)})`;
 
-        // Desktop Table Row
+        // Desktop Table Row (Exactly 4 columns: # | الهاتف | المتبقي | إجراءات)
         rowsHtml.push(`<tr>
-            <td style="text-align:center;">${onlineDot}</td>
-            <td style="font-size:12px;font-weight:700;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="اسم الجهاز: ${safeName}">
-                <i class="ri-smartphone-line" style="color:var(--color-primary);margin-left:3px;"></i>${deviceDisplay}
+            <td style="text-align:center;color:var(--color-text-muted);">${i + 1}</td>
+            <td style="font-weight:700;color:var(--color-text-primary);">
+                <div style="display:inline-flex;align-items:center;gap:6px;">
+                    ${onlineDot}
+                    <i class="ri-smartphone-line" style="color:var(--color-primary);"></i>
+                    <span>${deviceDisplay}</span>
+                </div>
             </td>
-            <td style="font-size:11px;font-family:var(--font-family-mono);color:var(--color-text-muted);cursor:pointer;" onclick="navigator.clipboard.writeText('${safeId}'); showToast('تم نسخ المعرّف بنجاح', 'success');" title="اضغط لنسخ المعرّف الكامل">
-                ${safeIdShort}... <i class="ri-file-copy-line" style="font-size:10px;margin-left:2px;"></i>
-            </td>
-            <td>${formatRelative(u.last_seen)}</td>
-            <td>${subEnd}</td>
-            <td style="text-align:center;">${remainingCell}</td>
-            <td><span class="badge" style="background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.25);">${u.total_runs || 0}</span></td>
-            <td><span class="badge" style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);">${formatMins(u.total_minutes || 0)}</span></td>
-            <td>${statusBadge}</td>
-            <td style="white-space:nowrap;">
-                <button class="table-btn details-btn" onclick="openUserProfile('${safeId}')" title="إدارة الجهاز">
-                    <i class="ri-settings-4-line"></i> <span>إدارة</span>
+            <td>${remainingText}</td>
+            <td style="text-align:center;">
+                <button class="btn-secondary" style="padding:4px 10px; font-size:12px;" onclick="openUserProfile('${safeId}')" title="إجراءات">
+                    <i class="ri-settings-4-line"></i> إجراءات
                 </button>
             </td>
         </tr>`);
 
-        // Mobile Touch Card
+        // Mobile Card (Phone name + Remaining days + Actions button only)
         cardsHtml.push(`
-            <div class="user-mobile-card" onclick="openUserProfile('${safeId}')">
-                <div class="user-card-header">
-                    <div class="user-card-title-group">
+            <div class="user-mobile-card">
+                <div class="user-card-info">
+                    <div class="user-card-title">
                         ${onlineDot}
-                        <span class="user-card-title"><i class="ri-smartphone-line" style="color:var(--color-primary);"></i> ${deviceDisplay}</span>
+                        <i class="ri-smartphone-line" style="color:var(--color-primary);"></i>
+                        <span class="device-name">${deviceDisplay}</span>
                     </div>
-                    <div style="display:flex;gap:4px;align-items:center;">
-                        ${statusBadge}
-                    </div>
-                </div>
-                <div class="user-card-meta">
-                    <div class="user-meta-item">
-                        <span class="meta-label">الاشتراك:</span>
-                        <span>${subEnd}</span>
-                    </div>
-                    <div class="user-meta-item">
-                        <span class="meta-label">المتبقي:</span>
-                        <span>${remainingCell}</span>
-                    </div>
-                    <div class="user-meta-item">
-                        <span class="meta-label">المغلفات:</span>
-                        <span style="color:#C084FC;font-weight:700;">${u.total_runs || 0}</span>
-                    </div>
-                    <div class="user-meta-item">
-                        <span class="meta-label">التشغيل:</span>
-                        <span style="color:#38BDF8;font-weight:700;">${formatMins(u.total_minutes || 0)}</span>
+                    <div class="user-card-remaining">
+                        <span class="meta-label">المتبقي:</span> ${remainingText}
                     </div>
                 </div>
-                <div class="user-card-footer">
-                    <span class="user-card-id"><i class="ri-fingerprint-line"></i> ${safeIdShort}...</span>
-                    <button class="user-card-action-btn" onclick="event.stopPropagation(); openUserProfile('${safeId}');">
-                        <i class="ri-settings-4-line"></i> التحكم بالجهاز
-                    </button>
-                </div>
+                <button class="btn-secondary user-actions-btn" onclick="openUserProfile('${safeId}')">
+                    <i class="ri-settings-4-line"></i> إجراءات
+                </button>
             </div>
         `);
     });
@@ -261,8 +239,8 @@ function openUserProfile(deviceId) {
     if (onlineBadge) {
         onlineBadge.textContent = isOnline ? 'متصل الآن' : 'غير متصل';
         onlineBadge.className = isOnline ? 'badge badge-active' : 'badge';
-        onlineBadge.style.background = isOnline ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.05)';
-        onlineBadge.style.color = isOnline ? '#10B981' : 'var(--color-text-muted)';
+        onlineBadge.style.background = isOnline ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.05)';
+        onlineBadge.style.color = isOnline ? 'var(--color-primary)' : 'var(--color-text-muted)';
     }
 
     const statusBadge = document.getElementById('modalStatusBadge');
@@ -323,12 +301,6 @@ function openUserProfile(deviceId) {
         }
     }
 
-    // Telemetry Stats
-    const totalRunsEl = document.getElementById('modalTotalRuns');
-    const totalMinsEl = document.getElementById('modalTotalMins');
-    if (totalRunsEl) totalRunsEl.textContent = user?.total_runs || 0;
-    if (totalMinsEl) totalMinsEl.textContent = formatMins(user?.total_minutes || 0);
-
     // Device ID
     const devIdEl = document.getElementById('modalDeviceId');
     if (devIdEl) devIdEl.textContent = deviceId || '—';
@@ -340,11 +312,11 @@ function openUserProfile(deviceId) {
         if (user?.status === 'banned') {
             blockBtn.className = 'action-card-btn success';
             blockLabel.textContent = 'رفع الحظر';
-            blockBtn.querySelector('i').className = 'fas fa-check';
+            blockBtn.querySelector('i').className = 'ri-check-line';
         } else {
             blockBtn.className = 'action-card-btn danger-soft';
             blockLabel.textContent = 'حظر الجهاز';
-            blockBtn.querySelector('i').className = 'fas fa-ban';
+            blockBtn.querySelector('i').className = 'ri-forbid-line';
         }
     }
 
@@ -389,20 +361,6 @@ function messageFromModal() {
     const id = currentModalDeviceId;
     closeUserProfile();
     if (window.openMsgModal) window.openMsgModal(id);
-}
-
-function screenshotFromModal() {
-    if (!currentModalDeviceId) return;
-    const id = currentModalDeviceId;
-    closeUserProfile();
-    if (window.openScreenshotModal) window.openScreenshotModal(id);
-}
-
-function galleryFromModal() {
-    if (!currentModalDeviceId) return;
-    const id = currentModalDeviceId;
-    closeUserProfile();
-    if (window.openGalleryModal) window.openGalleryModal(id);
 }
 
 async function toggleBlockFromModal() {
@@ -499,8 +457,6 @@ window.copyModalCode = copyModalCode;
 window.copyModalDeviceId = copyModalDeviceId;
 window.renewFromModal = renewFromModal;
 window.messageFromModal = messageFromModal;
-window.screenshotFromModal = screenshotFromModal;
-window.galleryFromModal = galleryFromModal;
 window.toggleBlockFromModal = toggleBlockFromModal;
 window.revokeFromModal = revokeFromModal;
 window.showDeleteConfirm = showDeleteConfirm;

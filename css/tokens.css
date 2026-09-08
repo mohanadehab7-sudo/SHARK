@@ -5,10 +5,10 @@
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/index.css');
 
 :root {
-  /* Colors — Sovereign Kafr Sakr Palette */
-  --color-primary:          #10B981;
-  --color-primary-hover:    #059669;
-  --color-primary-active:   #047857;
+  /* Colors — Sovereign Electric Blue Palette */
+  --color-primary:          #3B82F6;
+  --color-primary-hover:    #2563EB;
+  --color-primary-active:   #1D4ED8;
 
   --color-surface-base:     #0B0F17;
   --color-surface-card:     #111827;
@@ -18,18 +18,18 @@
 
   --color-border-subtle:    rgba(148, 163, 184, 0.12);
   --color-border-medium:    rgba(148, 163, 184, 0.22);
-  --color-border-focus:     #10B981;
+  --color-border-focus:     #3B82F6;
 
   --color-text-primary:     #F8FAFC;
   --color-text-secondary:   #94A3B8;
   --color-text-muted:       #64748B;
-  --color-text-inverse:     #0F172A;
+  --color-text-inverse:     #FFFFFF;
 
-  --color-status-success:   #10B981;
+  --color-status-success:   #3B82F6;
   --color-status-danger:    #EF4444;
   --color-status-warning:   #F59E0B;
   --color-status-info:      #38BDF8;
-  --color-status-purple:    #A855F7;
+  --color-status-purple:    #3B82F6;
 
   /* Aliases for full backward compatibility */
   --bg:          var(--color-surface-base);

@@ -5,22 +5,42 @@
 
 window.SHARK = window.SHARK || {};
 
+function setGlobalMsgTemplate(type) {
+    const textarea = document.getElementById('globalMessage');
+    if (!textarea) return;
+
+    if (type === 'ترحيب' || type === 'update') {
+        textarea.value = 'مرحباً بكم في منظومة SHARK! تم تحديث البوت بنجاح ليعمل بأعلى سرعة واستقرار.';
+    } else if (type === 'تجديد' || type === 'renew') {
+        textarea.value = 'تنبيه للمشتركين: يرجى تجديد الاشتراك لضمان استمرار عمل بوت SHARK دون توقف.';
+    } else if (type === 'صيانة' || type === 'maintenance') {
+        textarea.value = 'تنبيه: يجري الآن تحديث وصيانة سريعة لخوادم SHARK، سيعاود البوت العمل تلقائياً.';
+    }
+    textarea.focus();
+    showToast('تم وضع نص الرسالة (يمكنك تعديله بحرية)', 'info');
+}
+window.setGlobalMsgTemplate = setGlobalMsgTemplate;
+
 async function loadSettings() {
     try {
         const { data, error } = await window.sb.from('app_settings').select('*').eq('id', 1).maybeSingle();
         if (error) throw error;
 
+        const botModeEl = document.getElementById('botMode');
+        const globalMsgEl = document.getElementById('globalMessage');
+        const trialHoursEl = document.getElementById('trialHours');
+        const trialItem = document.getElementById('trialHoursItem');
+
         if (data) {
             window.SHARK.state.settingsData = data;
-            const botModeEl = document.getElementById('botMode');
-            const globalMsgEl = document.getElementById('globalMessage');
-            const trialHoursEl = document.getElementById('trialHours');
-            const trialItem = document.getElementById('trialHoursItem');
-
             if (botModeEl) botModeEl.value = data.bot_mode || 'subscription';
-            if (globalMsgEl) globalMsgEl.value = data.global_message || '';
+            if (globalMsgEl) globalMsgEl.value = data.global_message || 'مرحباً بكم في منظومة SHARK! التطبيق يعمل بكفاءة واستقرار.';
             if (trialHoursEl) trialHoursEl.value = data.trial_hours || 24;
             if (trialItem) trialItem.style.display = data.bot_mode === 'trial' ? 'block' : 'none';
+        } else {
+            if (globalMsgEl && !globalMsgEl.value) {
+                globalMsgEl.value = 'مرحباً بكم في منظومة SHARK! التطبيق يعمل بكفاءة واستقرار.';
+            }
         }
     } catch (err) {
         console.error("Settings load error:", err);
@@ -67,20 +87,11 @@ function initSettings() {
         }
     });
 
-    // Danger Zone: Delete Unused Codes
-    document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', async () => {
-        if (!confirm('هل أنت متأكد من حذف جميع الأكواد غير المستخدمة نهائياً؟')) return;
-        showLoading(true);
-        try {
-            const { error } = await window.sb.from('licenses').delete().is('device_id', null);
-            if (error) throw error;
-            showToast('تم حذف الأكواد غير المستخدمة بنجاح', 'success');
-            await window.SHARK.codes?.loadCodesData();
-            await window.SHARK.dashboard?.loadDashboardData();
-        } catch (err) {
-            showToast('خطأ: ' + err.message, 'error');
-        } finally {
-            showLoading(false);
+    // Delegate delete unused codes button to robust handler
+    document.getElementById('deleteUnusedCodesBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.deleteUnusedCodes) {
+            window.deleteUnusedCodes();
         }
     });
 
@@ -154,5 +165,7 @@ function initSettings() {
 window.loadSettings = loadSettings;
 window.SHARK.settings = {
     loadSettings,
-    initSettings
+    initSettings,
+    setGlobalMsgTemplate
 };
+
