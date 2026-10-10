@@ -19,9 +19,13 @@ function rndNum(length = 12) {
 
 async function loadCodesData() {
     try {
-        const { data, error } = await window.sb.from('licenses').select('*').order('created_at', { ascending: false });
+        const { data, error } = await window.sb
+            .from('licenses')
+            .select('*')
+            .neq('reseller', 'partner1')
+            .order('created_at', { ascending: false });
         if (error) throw error;
-        window.SHARK.state.codesData = data || [];
+        window.SHARK.state.codesData = (data || []).filter(c => !(c.license_key && c.license_key.startsWith('SAMEH-')));
         applyCodesFilter();
     } catch (err) {
         console.error("Error loading codes:", err);
@@ -34,26 +38,17 @@ function applyCodesFilter() {
     const codesData = window.SHARK.state.codesData || [];
     let filtered = codesData;
 
-    if (filter === 'partner_sameh') {
-        filtered = codesData.filter(c => c.reseller === 'partner1' || (c.license_key && c.license_key.startsWith('SAMEH-')));
-    } else if (filter === 'everything') {
-        filtered = codesData;
-    } else {
-        // By default, show Mohanad's own codes only (exclude partner1)
-        filtered = codesData.filter(c => c.reseller !== 'partner1' && !(c.license_key && c.license_key.startsWith('SAMEH-')));
-
-        if (filter === 'available') filtered = filtered.filter(c => !c.device_id && c.status === 'active');
-        else if (filter === 'used')  filtered = filtered.filter(c => c.device_id);
-        else if (filter === 'trial') filtered = filtered.filter(c => {
-            if (c.duration_days && c.duration_days <= 1) return true;
-            if (!c.expires_at) return false;
-            const created = new Date(c.created_at);
-            const expires = new Date(c.expires_at);
-            const diffHours = (expires - created) / 3600000;
-            return diffHours <= 24;
-        });
-        else if (filter === 'lifetime') filtered = filtered.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
-    }
+    if (filter === 'available') filtered = codesData.filter(c => !c.device_id && c.status === 'active');
+    else if (filter === 'used')  filtered = codesData.filter(c => c.device_id);
+    else if (filter === 'trial') filtered = codesData.filter(c => {
+        if (c.duration_days && c.duration_days <= 1) return true;
+        if (!c.expires_at) return false;
+        const created = new Date(c.created_at);
+        const expires = new Date(c.expires_at);
+        const diffHours = (expires - created) / 3600000;
+        return diffHours <= 24;
+    });
+    else if (filter === 'lifetime') filtered = codesData.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
 
     const countBadge = document.getElementById('codesCount');
     if (countBadge) countBadge.textContent = `(${filtered.length})`;
@@ -112,9 +107,6 @@ function displayCodes(codes) {
             <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:12px;font-weight:700;">
                 <div style="display:inline-flex;align-items:center;gap:4px;">
                     <span>${safeKey}</span>
-                    ${(c.reseller === 'partner1' || (c.license_key && c.license_key.startsWith('SAMEH-')))
-                        ? '<span class="badge" style="background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.3);font-size:10px;padding:1px 5px;margin-right:2px;">سامح</span>'
-                        : ''}
                     <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="نسخ الكود" class="table-btn" style="padding:2px 6px;">
                         <i class="ri-file-copy-line"></i>
                     </button>

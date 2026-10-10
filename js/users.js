@@ -9,7 +9,11 @@ let currentModalDeviceId = null;
 
 async function loadUsersData() {
     try {
-        const { data, error } = await window.sb.from('devices').select('*').order('created_at', { ascending: false });
+        const { data, error } = await window.sb
+            .from('devices')
+            .select('*')
+            .neq('reseller', 'partner1')
+            .order('created_at', { ascending: false });
         if (error) throw error;
         window.SHARK.state.usersData = data || [];
         applyUserFilter();
@@ -58,12 +62,6 @@ function applyUserFilter() {
     }
 
     switch (filter) {
-        case 'my_users':
-            filtered = filtered.filter(u => u.reseller !== 'partner1');
-            break;
-        case 'sameh_users':
-            filtered = filtered.filter(u => u.reseller === 'partner1');
-            break;
         case 'most_active':
             filtered = filtered.filter(u => isUserSubActive(u));
             break;
@@ -180,8 +178,7 @@ function displayUsers(users) {
 
         const safeName = escapeHtml(u.device_name || '');
         const safeId = escapeHtml(u.device_id || '');
-        const resellerTag = (u.reseller === 'partner1') ? ' <span class="badge" style="background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.3);font-size:10px;padding:1px 5px;margin-right:4px;">سامح</span>' : '';
-        const deviceDisplay = (safeName || `هاتف (${safeId.substring(0, 8)})`) + resellerTag;
+        const deviceDisplay = safeName || `هاتف (${safeId.substring(0, 8)})`;
 
         // Desktop Table Row (Exactly 4 columns: # | الهاتف | المتبقي | إجراءات)
         rowsHtml.push(`<tr>

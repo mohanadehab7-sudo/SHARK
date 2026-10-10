@@ -7,10 +7,10 @@ window.SHARK = window.SHARK || {};
 
 async function loadDashboardData() {
     try {
-        const { data: devices, error: devErr } = await window.sb.from('devices').select('*');
+        const { data: devices, error: devErr } = await window.sb.from('devices').select('*').neq('reseller', 'partner1');
         if (devErr) throw devErr;
 
-        const { data: licenses, error: licErr } = await window.sb.from('licenses').select('status, device_id');
+        const { data: licenses, error: licErr } = await window.sb.from('licenses').select('status, device_id').neq('reseller', 'partner1');
         if (licErr) throw licErr;
 
         const { data: settings, error: setErr } = await window.sb.from('app_settings').select('*').eq('id', 1).maybeSingle();
