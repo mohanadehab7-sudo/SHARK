@@ -43,15 +43,22 @@ function initAuth() {
                 const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
+                // Security Shield: Block partner node accounts from main admin panel
+                const userEmail = (data.user?.email || '').toLowerCase();
+                if (userEmail.includes('@shark-server.com') || userEmail.includes('node1')) {
+                    await window.sb.auth.signOut();
+                    throw new Error('⛔ هذا الحساب مخصص لخادم فرعي ولا يملك صلاحيات للوصول إلى لوحة التحكم الرئيسية.');
+                }
+
                 window.SHARK.state.currentUser = data.user;
                 showMainApp();
                 showToast('تم تسجيل الدخول بنجاح', 'success');
             } catch (err) {
                 if (loginError) {
-                    loginError.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة، أو لا تملك صلاحيات كمدير.';
+                    loginError.textContent = err.message || 'اسم المستخدم أو كلمة المرور غير صحيحة، أو لا تملك صلاحيات كمدير.';
                     loginError.style.display = 'block';
                 }
-                showToast('تعذر تسجيل الدخول، تحقق من البيانات المدخلة', 'error');
+                showToast(err.message || 'تعذر تسجيل الدخول، تحقق من البيانات المدخلة', 'error');
             } finally {
                 showLoading(false);
             }
@@ -77,6 +84,11 @@ function initAuth() {
         try {
             const { data: { session }, error } = await window.sb.auth.getSession();
             if (session && session.user) {
+                const userEmail = (session.user?.email || '').toLowerCase();
+                if (userEmail.includes('@shark-server.com') || userEmail.includes('node1')) {
+                    await window.sb.auth.signOut();
+                    return;
+                }
                 window.SHARK.state.currentUser = session.user;
                 showMainApp();
             }
