@@ -103,6 +103,9 @@ function displayCodes(codes) {
             <td style="font-family:var(--font-family-mono);color:var(--color-primary);font-size:12px;font-weight:700;">
                 <div style="display:inline-flex;align-items:center;gap:4px;">
                     <span>${safeKey}</span>
+                    ${(c.reseller === 'partner1' || (c.license_key && c.license_key.startsWith('SAMEH-')))
+                        ? '<span class="badge" style="background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.3);font-size:10px;padding:1px 5px;margin-right:2px;">سامح</span>'
+                        : ''}
                     <button onclick="navigator.clipboard.writeText('${safeKey}'); showToast('تم نسخ الكود بنجاح','success')" title="نسخ الكود" class="table-btn" style="padding:2px 6px;">
                         <i class="ri-file-copy-line"></i>
                     </button>

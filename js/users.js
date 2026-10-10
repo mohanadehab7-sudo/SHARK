@@ -174,7 +174,8 @@ function displayUsers(users) {
 
         const safeName = escapeHtml(u.device_name || '');
         const safeId = escapeHtml(u.device_id || '');
-        const deviceDisplay = safeName || `هاتف (${safeId.substring(0, 8)})`;
+        const resellerTag = (u.reseller === 'partner1') ? ' <span class="badge" style="background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.3);font-size:10px;padding:1px 5px;margin-right:4px;">سامح</span>' : '';
+        const deviceDisplay = (safeName || `هاتف (${safeId.substring(0, 8)})`) + resellerTag;
 
         // Desktop Table Row (Exactly 4 columns: # | الهاتف | المتبقي | إجراءات)
         rowsHtml.push(`<tr>
