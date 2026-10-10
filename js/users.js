@@ -58,6 +58,12 @@ function applyUserFilter() {
     }
 
     switch (filter) {
+        case 'my_users':
+            filtered = filtered.filter(u => u.reseller !== 'partner1');
+            break;
+        case 'sameh_users':
+            filtered = filtered.filter(u => u.reseller === 'partner1');
+            break;
         case 'most_active':
             filtered = filtered.filter(u => isUserSubActive(u));
             break;

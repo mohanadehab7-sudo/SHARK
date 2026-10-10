@@ -34,17 +34,26 @@ function applyCodesFilter() {
     const codesData = window.SHARK.state.codesData || [];
     let filtered = codesData;
 
-    if (filter === 'available') filtered = codesData.filter(c => !c.device_id && c.status === 'active');
-    else if (filter === 'used')  filtered = codesData.filter(c => c.device_id);
-    else if (filter === 'trial') filtered = codesData.filter(c => {
-        if (c.duration_days && c.duration_days <= 1) return true;
-        if (!c.expires_at) return false;
-        const created = new Date(c.created_at);
-        const expires = new Date(c.expires_at);
-        const diffHours = (expires - created) / 3600000;
-        return diffHours <= 24;
-    });
-    else if (filter === 'lifetime') filtered = codesData.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
+    if (filter === 'partner_sameh') {
+        filtered = codesData.filter(c => c.reseller === 'partner1' || (c.license_key && c.license_key.startsWith('SAMEH-')));
+    } else if (filter === 'everything') {
+        filtered = codesData;
+    } else {
+        // By default, show Mohanad's own codes only (exclude partner1)
+        filtered = codesData.filter(c => c.reseller !== 'partner1' && !(c.license_key && c.license_key.startsWith('SAMEH-')));
+
+        if (filter === 'available') filtered = filtered.filter(c => !c.device_id && c.status === 'active');
+        else if (filter === 'used')  filtered = filtered.filter(c => c.device_id);
+        else if (filter === 'trial') filtered = filtered.filter(c => {
+            if (c.duration_days && c.duration_days <= 1) return true;
+            if (!c.expires_at) return false;
+            const created = new Date(c.created_at);
+            const expires = new Date(c.expires_at);
+            const diffHours = (expires - created) / 3600000;
+            return diffHours <= 24;
+        });
+        else if (filter === 'lifetime') filtered = filtered.filter(c => c.duration_days >= 36500 || (!!c.device_id && !c.expires_at));
+    }
 
     const countBadge = document.getElementById('codesCount');
     if (countBadge) countBadge.textContent = `(${filtered.length})`;
@@ -200,7 +209,10 @@ document.getElementById('refreshCodesBtn')?.addEventListener('click', () => {
 });
 document.getElementById('copyAvailableBtn')?.addEventListener('click', () => {
     const codesData = window.SHARK.state.codesData || [];
-    const available = codesData.filter(c => !c.device_id && c.status === 'active').map(c => c.license_key).join('\n');
+    const available = codesData
+        .filter(c => !c.device_id && c.status === 'active' && c.reseller !== 'partner1' && !(c.license_key && c.license_key.startsWith('SAMEH-')))
+        .map(c => c.license_key)
+        .join('\n');
     if (!available) {
         showToast('لا توجد أكواد متاحة للنسخ', 'info');
         return;
@@ -281,12 +293,12 @@ window.generateCustomDaysCode = generateCustomDaysCode;
 async function deleteUnusedCodes() {
     showLoading(true);
     try {
-        // Query directly from database to get fresh list of unused licenses
-        const { data, error } = await window.sb.from('licenses').select('license_key, device_id');
+        // Query directly from database to get fresh list of unused licenses for main admin
+        const { data, error } = await window.sb.from('licenses').select('license_key, device_id, reseller');
         if (error) throw error;
 
         const unusedKeys = (data || [])
-            .filter(c => !c.device_id || String(c.device_id).trim() === '')
+            .filter(c => (!c.device_id || String(c.device_id).trim() === '') && c.reseller !== 'partner1' && !(c.license_key && c.license_key.startsWith('SAMEH-')))
             .map(c => c.license_key);
 
         if (!unusedKeys.length) {
