@@ -353,3 +353,186 @@
         display: none !important;
     }
 }
+
+/* ════════════════ CUSTOMER GROUPS & MULTI-SELECT STYLES ════════════════ */
+
+/* Checkboxes */
+.device-check-col {
+    width: 38px;
+    text-align: center;
+}
+.device-checkbox {
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+/* Customer / Group Tags */
+.customer-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #60A5FA;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.customer-tag:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+.customer-tag-unassigned {
+    color: var(--color-text-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+.customer-tag-unassigned:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Floating Bulk Action Bar (Glassmorphism dock) */
+.bulk-action-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(59, 130, 246, 0.2);
+    border-radius: 14px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 1200;
+    animation: slideUpFloat 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (max-width: 768px) {
+    .bulk-action-bar {
+        bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 12px);
+        width: calc(100% - 24px);
+        max-width: 440px;
+        padding: 8px 12px;
+        gap: 8px;
+        justify-content: space-between;
+    }
+}
+@keyframes slideUpFloat {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.bulk-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+}
+.bulk-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Customer Group Cards (Accordion) */
+.group-card {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.group-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+.group-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+}
+.group-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+.group-title-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.group-icon-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.group-name-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.group-stats-sub {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.group-actions-side {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.group-body {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0;
+    display: block;
+}
+.group-body.collapsed {
+    display: none;
+}
+.group-device-row {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 12.5px;
+    gap: 10px;
+}
+.group-device-row:last-child {
+    border-bottom: none;
+}
+.group-device-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}

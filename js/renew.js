@@ -5,15 +5,21 @@
 
 window.SHARK = window.SHARK || {};
 
-function openRenewModal(deviceId) {
+function openRenewModal(deviceIdOrList, groupLabel = '') {
     const codesData = window.SHARK.state.codesData || [];
     const usersData = window.SHARK.state.usersData || [];
 
-    const lic  = codesData.find(c => c.device_id === deviceId);
-    const user = usersData.find(u => u.device_id === deviceId);
+    const isList = Array.isArray(deviceIdOrList);
+    const targetIds = isList ? deviceIdOrList : (deviceIdOrList ? [deviceIdOrList] : []);
+    const primaryId = targetIds[0] || null;
+
+    const lic  = codesData.find(c => c.device_id === primaryId);
+    const user = usersData.find(u => u.device_id === primaryId);
 
     window.SHARK.state.renewState = {
-        deviceId,
+        deviceId: primaryId,
+        deviceIds: targetIds,
+        groupLabel: groupLabel || '',
         days: 30,
         isLifetime: false,
         currentSubEnd: lic?.expires_at || null,
@@ -23,21 +29,25 @@ function openRenewModal(deviceId) {
 
     const nameEl = document.getElementById('renewUserName');
     const safeName = escapeHtml(user?.device_name);
-    const safeId = escapeHtml(deviceId);
+    const safeId = escapeHtml(primaryId || '');
     const phoneName = safeName || `هاتف (${safeId.substring(0, 8)})`;
 
     if (nameEl) {
-        const isLifetime = lic && (!lic.expires_at || lic.duration_days >= 36500 || (lic.expires_at && lic.expires_at.startsWith('2099-01-01')));
-        if (isLifetime) {
-            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;"><i class="ri-infinity-line"></i> مدى الحياة حالياً</span>`;
-        } else if (lic?.expires_at) {
-            const diff = new Date(lic.expires_at) - new Date();
-            const daysLeft = Math.ceil(diff / 86400000);
-            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp;
-                ينتهي: <b style="color:${diff < 0 ? 'var(--color-status-danger)' : 'var(--color-text-primary)'}">${formatDate(lic.expires_at)}</b>
-                <span style="color:var(--color-text-muted);font-size:11px;">${diff > 0 ? `(${daysLeft} يوم متبقي)` : '(منتهي)'}</span>`;
+        if (targetIds.length > 1) {
+            nameEl.innerHTML = `<i class="ri-group-line" style="color:var(--color-primary);font-size:16px;"></i> تجديد مجموعة: <b style="color:var(--color-primary);">${escapeHtml(groupLabel || 'الهواتف المحددة')}</b> &nbsp;|&nbsp; <span style="color:#60A5FA;font-weight:700;">(${targetIds.length} هواتف دفعة واحدة)</span>`;
         } else {
-            nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:var(--color-text-muted);">لا يوجد اشتراك</span>`;
+            const isLifetime = lic && (!lic.expires_at || lic.duration_days >= 36500 || (lic.expires_at && lic.expires_at.startsWith('2099-01-01')));
+            if (isLifetime) {
+                nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:#60a5fa;"><i class="ri-infinity-line"></i> مدى الحياة حالياً</span>`;
+            } else if (lic?.expires_at) {
+                const diff = new Date(lic.expires_at) - new Date();
+                const daysLeft = Math.ceil(diff / 86400000);
+                nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp;
+                    ينتهي: <b style="color:${diff < 0 ? 'var(--color-status-danger)' : 'var(--color-text-primary)'}">${formatDate(lic.expires_at)}</b>
+                    <span style="color:var(--color-text-muted);font-size:11px;">${diff > 0 ? `(${daysLeft} يوم متبقي)` : '(منتهي)'}</span>`;
+            } else {
+                nameEl.innerHTML = `<i class="ri-smartphone-line"></i> <b style="color:var(--color-primary)">${phoneName}</b> &nbsp;|&nbsp; <span style="color:var(--color-text-muted);">لا يوجد اشتراك</span>`;
+            }
         }
     }
 
@@ -164,7 +174,11 @@ function updateRenewInfo() {
 
 async function confirmRenew() {
     const renewState = window.SHARK.state.renewState;
-    if (!renewState.deviceId) return;
+    const targetIds = renewState.deviceIds && renewState.deviceIds.length > 0 
+        ? renewState.deviceIds 
+        : (renewState.deviceId ? [renewState.deviceId] : []);
+
+    if (!targetIds.length) return;
     if (!renewState.isLifetime && !renewState.customExpiryDate && !renewState.days) {
         showToast('يرجى اختيار مدة التجديد أولاً', 'error');
         return;
@@ -172,45 +186,55 @@ async function confirmRenew() {
 
     showLoading(true);
     try {
-        let newEnd;
-        if (renewState.isLifetime) {
-            newEnd = null;
-        } else if (renewState.customExpiryDate) {
-            newEnd = new Date(renewState.customExpiryDate + 'T23:59:59').toISOString();
-        } else if (renewState.customHours) {
-            const now = new Date();
-            const base = renewState.currentSubEnd && new Date(renewState.currentSubEnd) > now
-                ? new Date(renewState.currentSubEnd) 
-                : now;
-            newEnd = new Date(base.getTime() + renewState.customHours * 3600000).toISOString();
-        } else {
-            const now = new Date();
-            const base = renewState.currentSubEnd && new Date(renewState.currentSubEnd) > now
-                ? new Date(renewState.currentSubEnd) 
-                : now;
-            newEnd = new Date(base.getTime() + renewState.days * 86400000).toISOString();
-        }
-
         const codesData = window.SHARK.state.codesData || [];
-        const lic = codesData.find(c => c.device_id === renewState.deviceId);
+        const now = new Date();
 
-        if (lic) {
-            await window.sb.from('licenses')
-                .update({ expires_at: newEnd, status: 'active' })
-                .eq('device_id', renewState.deviceId);
-        } else {
-            const key = window.rndNum ? window.rndNum(12) : Math.random().toString(36).substring(2, 14).toUpperCase();
-            await window.sb.from('licenses').insert([{
-                license_key: key,
-                device_id: renewState.deviceId,
-                expires_at: newEnd,
-                status: 'active',
-                duration_days: renewState.isLifetime ? 36500 : (renewState.days || 30)
-            }]);
+        for (const devId of targetIds) {
+            const lic = codesData.find(c => c.device_id === devId);
+            let newEnd;
+
+            if (renewState.isLifetime) {
+                newEnd = null;
+            } else if (renewState.customExpiryDate) {
+                newEnd = new Date(renewState.customExpiryDate + 'T23:59:59').toISOString();
+            } else if (renewState.customHours) {
+                const base = lic?.expires_at && new Date(lic.expires_at) > now
+                    ? new Date(lic.expires_at)
+                    : now;
+                newEnd = new Date(base.getTime() + renewState.customHours * 3600000).toISOString();
+            } else {
+                const base = lic?.expires_at && new Date(lic.expires_at) > now
+                    ? new Date(lic.expires_at)
+                    : now;
+                newEnd = new Date(base.getTime() + renewState.days * 86400000).toISOString();
+            }
+
+            if (lic) {
+                const { error } = await window.sb.from('licenses')
+                    .update({ expires_at: newEnd, status: 'active' })
+                    .eq('device_id', devId);
+                if (error) throw error;
+            } else {
+                const key = window.rndNum ? window.rndNum(12) : Math.random().toString(36).substring(2, 14).toUpperCase();
+                const { error } = await window.sb.from('licenses').insert([{
+                    license_key: key,
+                    device_id: devId,
+                    expires_at: newEnd,
+                    status: 'active',
+                    duration_days: renewState.isLifetime ? 36500 : (renewState.days || 30)
+                }]);
+                if (error) throw error;
+            }
         }
 
-        showToast('تم تجديد الاشتراك بنجاح', 'success');
+        if (targetIds.length > 1) {
+            showToast(`تم تجديد اشتراك ${targetIds.length} هواتف بنجاح!`, 'success');
+        } else {
+            showToast('تم تجديد الاشتراك بنجاح', 'success');
+        }
+
         closeRenewModal();
+        if (window.clearSelectedUsers) window.clearSelectedUsers();
         await Promise.all([
             window.SHARK.codes?.loadCodesData(),
             window.SHARK.users?.loadUsersData(),
@@ -222,6 +246,15 @@ async function confirmRenew() {
     } finally {
         showLoading(false);
     }
+}
+
+function openBulkRenewModal() {
+    if (!window.selectedUsers || window.selectedUsers.size === 0) {
+        showToast('يرجى تحديد هواتف أولاً', 'info');
+        return;
+    }
+    const ids = Array.from(window.selectedUsers);
+    openRenewModal(ids, 'الهواتف المحددة');
 }
 
 async function revokeDeviceLicense(deviceId) {
@@ -261,6 +294,7 @@ document.getElementById('renewModal')?.addEventListener('click', e => {
 
 // Expose globals
 window.openRenewModal = openRenewModal;
+window.openBulkRenewModal = openBulkRenewModal;
 window.closeRenewModal = closeRenewModal;
 window.initRenewModal = initRenewModal;
 window.confirmRenew = confirmRenew;
@@ -268,6 +302,7 @@ window.revokeDeviceLicense = revokeDeviceLicense;
 
 window.SHARK.renew = {
     openRenewModal,
+    openBulkRenewModal,
     closeRenewModal,
     initRenewModal,
     confirmRenew,
